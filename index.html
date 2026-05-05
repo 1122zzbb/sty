@@ -98,10 +98,13 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 .export-dd button:hover{background:var(--bg-muted)}
 .record-item{background:var(--bg-card);border:.5px solid var(--border);border-radius:var(--radius);padding:1.1rem 1.25rem;margin-bottom:10px;cursor:pointer;transition:border-color .15s}
 .record-item:hover{border-color:var(--border-2)}
+.record-item.delete-mode{background:var(--bg-muted)}
 .record-item-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px}
 .record-date{font-size:14px;font-weight:500}
-.tags{display:flex;gap:5px;flex-wrap:wrap}
+.tags{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
 .tag{font-size:11px;padding:2px 9px;border-radius:100px;background:var(--bg-muted);color:var(--text-2);border:.5px solid var(--border)}
+.del-btn{font-size:11px;padding:2px 8px;border-radius:100px;background:var(--red);color:#fff;border:none;cursor:pointer;margin-left:4px;}
+.del-btn:hover{opacity:.8}
 .tag.cloud{color:var(--green);border-color:var(--green);background:rgba(76,175,80,.07)}
 .record-excerpt{font-size:13px;color:var(--text-2);line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .empty{text-align:center;padding:3.5rem 2rem;color:var(--text-3);font-size:14px;line-height:1.9}
@@ -123,6 +126,15 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 .modal-body{font-size:14px;line-height:1.85;white-space:pre-wrap;color:var(--text)}
 .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:9px 20px;border-radius:100px;font-size:13px;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s;white-space:nowrap}
 .toast.show{opacity:1}
+.chart-container{background:var(--bg-card);border:.5px solid var(--border);border-radius:var(--radius);padding:1rem;margin-bottom:1.5rem}
+.chart-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem}
+.chart-title{font-size:13px;font-weight:500;color:var(--text)}
+.chart-month{font-size:11px;color:var(--text-3)}
+.chart-wrap{position:relative}
+.chart-wrap canvas{width:100%}
+.chart-legend{display:flex;justify-content:center;margin-top:.5rem}
+.legend-item{font-size:11px;color:var(--text-2);display:flex;align-items:center;gap:4px}
+.legend-dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
 @media(max-width:480px){
   .field-grid{grid-template-columns:1fr}
   .stats-row{grid-template-columns:1fr 1fr}
@@ -142,6 +154,19 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
       </div>
     </div>
     <span class="date-label" id="todayLabel"></span>
+  </div>
+
+  <div id="chartArea" class="chart-container" style="display:none;">
+    <div class="chart-header">
+      <span class="chart-title">本月学习趋势</span>
+      <span id="chartMonth" class="chart-month"></span>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="lineChart" height="120"></canvas>
+    </div>
+    <div class="chart-legend">
+      <span class="legend-item"><span class="legend-dot"></span>学习时长(小时)</span>
+    </div>
   </div>
 
   <div class="tabs">
@@ -192,8 +217,8 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     <div class="preview-grid" id="previewGrid"></div>
 
     <div class="btn-group">
-      <button class="btn-primary" id="saveRecordBtn" onclick="saveSimpleRecord()" disabled>💾 直接保存</button>
-      <button class="btn-primary" id="analyzeBtn" onclick="analyze()" disabled>🤖 AI 分析</button>
+      <button class="btn-primary" id="saveRecordBtn" onclick="saveSimpleRecord()" disabled>直接保存</button>
+      <button class="btn-primary" id="analyzeBtn" onclick="analyze()" disabled>AI 分析</button>
     </div>
     <div id="resultArea"></div>
   </div>
@@ -218,6 +243,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
             <button onclick="exportMd('all')">全部</button>
           </div>
         </div>
+        <button class="export-btn" id="deleteModeBtn" onclick="toggleDeleteMode()" style="display:none;">删除模式</button>
       </div>
     </div>
     <div id="recordList"></div>
@@ -228,7 +254,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     <div class="card">
       <div class="lock-bar">
         <div class="card-title">AI 分析设置</div>
-        <button class="lock-btn" id="apiLockBtn" onclick="toggleApiLock()">🔒 已锁定</button>
+        <button class="lock-btn" id="apiLockBtn" onclick="toggleApiLock()">已锁定</button>
       </div>
       <div id="apiCfgBody" class="cfg-locked">
         <div class="field-grid" style="margin-bottom:12px">
@@ -264,7 +290,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     <div class="card">
       <div class="lock-bar">
         <div class="card-title">Supabase 云端存储</div>
-        <button class="lock-btn" id="sbLockBtn" onclick="toggleSbLock()">🔒 已锁定</button>
+        <button class="lock-btn" id="sbLockBtn" onclick="toggleSbLock()">已锁定</button>
       </div>
       <div id="sbCfgBody" class="cfg-locked">
         <div class="field-grid" style="margin-bottom:12px">
@@ -276,6 +302,18 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
           <span class="conn-status" id="connStatus"></span>
         </div>
         <span class="hint-text">保存成功后自动锁定，防止误改</span>
+        <div style="margin-top:12px;padding:10px;background:var(--bg-muted);border-radius:var(--radius-sm);font-size:12px;line-height:1.6;color:var(--text-2);">
+          <strong style="color:var(--text);">首次使用需创建配置表</strong>
+          <p style="margin-top:4px;">在 Supabase SQL Editor 中执行：</p>
+          <pre style="margin-top:6px;padding:8px;background:var(--bg);border-radius:4px;font-size:11px;overflow-x:auto;">CREATE TABLE app_settings (
+  id SERIAL PRIMARY KEY,
+  key TEXT UNIQUE NOT NULL,
+  value TEXT,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE app_settings ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "公开读写" ON app_settings FOR ALL USING (true);</pre>
+        </div>
       </div>
     </div>
 
@@ -299,6 +337,28 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
   </div>
 </div>
 <div class="toast" id="toast"></div>
+<div class="overlay" id="pwdOverlay" style="display:none;">
+  <div class="modal" style="max-width:320px;text-align:center;">
+    <div class="modal-head"><h3>删除确认</h3><button class="modal-close" onclick="closePwdOverlay()">✕</button></div>
+    <div style="padding:1rem 0;">
+      <p style="font-size:14px;color:var(--text-2);margin-bottom:1rem;">请输入管理员密码</p>
+      <input id="pwdInput" type="password" placeholder="密码" style="width:100%;padding:10px;font-size:14px;border:.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-muted);color:var(--text);outline:none;text-align:center;"/>
+      <button class="btn-primary" style="margin-top:1rem;" onclick="verifyDeletePwd()">确认</button>
+    </div>
+  </div>
+</div>
+<div class="overlay" id="confirmOverlay" style="display:none;">
+  <div class="modal" style="max-width:320px;text-align:center;">
+    <div class="modal-head"><h3>确认删除</h3><button class="modal-close" onclick="closeConfirmOverlay()">✕</button></div>
+    <div style="padding:1rem 0;">
+      <p style="font-size:14px;color:var(--text-2);margin-bottom:1rem;">确定要删除这条学习记录吗？</p>
+      <div style="display:flex;gap:10px;">
+        <button class="btn" style="flex:1;" onclick="closeConfirmOverlay()">取消</button>
+        <button class="btn-primary" id="confirmDeleteBtn" onclick="executeDelete()" style="flex:1;margin-top:0;">确认删除</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
 const CACHE_KEY='study_logs_v4';
@@ -310,6 +370,9 @@ let _records=[];
 let selectedSubjects=new Set();
 let apiLocked=true;
 let sbLocked=true;
+let deleteMode=false;
+let pendingDeleteIndex=null;
+const DELETE_PWD='1122zzbb';
 
 const MODEL_PRESETS={
   siliconflow:['Qwen/Qwen2.5-VL-72B-Instruct','Pro/Qwen/Qwen2.5-VL-7B-Instruct','Qwen/Qwen3-14B','deepseek-ai/DeepSeek-V3','deepseek-ai/deepseek-vl2'],
@@ -378,9 +441,11 @@ function updateRecordButtons(){const ok=hasContent();$('saveRecordBtn').disabled
 
 /* 本地存储 */
 function localRecords(){try{return JSON.parse(localStorage.getItem(CACHE_KEY)||'[]')}catch{return[]}}
+function genId(){return Date.now().toString(36)+Math.random().toString(36).substr(2,9)}
 function cacheRecord(r){
+  if(!r.id)r.id=genId();
   const all=localRecords();
-  const i=all.findIndex(x=>x.date===r.date);
+  const i=all.findIndex(x=>x.id===r.id);
   if(i>=0)all[i]=r;else all.unshift(r);
   localStorage.setItem(CACHE_KEY,JSON.stringify(all));
 }
@@ -401,21 +466,95 @@ async function testSb(){
   try{await sbReq('study_logs?limit=1&select=id');setSyncStatus('sync',true,'云端已连接');return true}
   catch{setSyncStatus('sync',false,'连接失败');return false}
 }
+
+/* 云端配置同步 */
+const SETTINGS_TABLE='app_settings';
+async function cloudSaveSetting(key,value){
+  if(!sb)return false;
+  try{
+    const exist=await sbReq(`${SETTINGS_TABLE}?key=eq.${key}&select=id`);
+    if(exist&&exist.length>0){
+      await sbReq(`${SETTINGS_TABLE}?key=eq.${key}`,{method:'PATCH',body:JSON.stringify({value})});
+    }else{
+      await sbReq(SETTINGS_TABLE,{method:'POST',prefer:'resolution=merge-duplicates',body:JSON.stringify({id:genId(),key,value})});
+    }
+    return true;
+  }catch(e){console.warn('云端配置保存失败:',e.message);return false}
+}
+async function cloudLoadSettings(){
+  if(!sb)return null;
+  try{
+    const data=await sbReq(`${SETTINGS_TABLE}?select=*`);
+    if(data&&data.length>0){
+      const settings={};
+      data.forEach(item=>{settings[item.key]=item.value});
+      return settings;
+    }
+  }catch(e){console.warn('云端配置加载失败:',e.message)}
+  return null;
+}
+async function syncSettingsToCloud(){
+  if(!sb)return;
+  const c=cfg();
+  const objs=[
+    {key:'apiProvider',value:c.apiProvider||''},
+    {key:'apiModel',value:c.apiModel||''},
+    {key:'sbUrl',value:c.sbUrl||''}
+  ];
+  for(const obj of objs){
+    await cloudSaveSetting(obj.key,obj.value);
+  }
+  const apiKey=readSens('apiKey');
+  const sbKey=readSens('sbKey');
+  if(apiKey)await cloudSaveSetting('encryptedApiKey',apiKey);
+  if(sbKey)await cloudSaveSetting('encryptedSbKey',sbKey);
+}
+async function restoreSettingsFromCloud(){
+  if(!sb)return false;
+  const cloudSettings=await cloudLoadSettings();
+  if(!cloudSettings)return false;
+  let restored=false;
+  if(cloudSettings.apiProvider||cloudSettings.apiModel){
+    const update={};
+    if(cloudSettings.apiProvider)update.apiProvider=cloudSettings.apiProvider;
+    if(cloudSettings.apiModel)update.apiModel=cloudSettings.apiModel;
+    if(cloudSettings.sbUrl)update.sbUrl=cloudSettings.sbUrl;
+    cfg(update);
+    restored=true;
+  }
+  if(cloudSettings.encryptedApiKey){
+    cfg({apiKey:cloudSettings.encryptedApiKey});
+    restored=true;
+  }
+  if(cloudSettings.encryptedSbKey){
+    cfg({sbKey:cloudSettings.encryptedSbKey});
+    restored=true;
+  }
+  return restored;
+}
 async function upsert(record){
   cacheRecord(record);if(!sb)return'local';
   try{
-    const exist=await sbReq(`study_logs?date=eq.${record.date}&select=id`);
-    const payload={subjects:record.subjects,hours:record.hours?parseFloat(record.hours):null,memo:record.memo,analysis:record.analysis,images:record.images||[],updated_at:new Date().toISOString()};
-    if(exist&&exist.length>0)await sbReq(`study_logs?date=eq.${record.date}`,{method:'PATCH',body:JSON.stringify(payload)});
-    else await sbReq('study_logs',{method:'POST',prefer:'resolution=merge-duplicates',body:JSON.stringify({date:record.date,...payload})});
+    const exist=record.id?await sbReq(`study_logs?id=eq.${record.id}&select=id`):await sbReq(`study_logs?date=eq.${record.date}&select=id`);
+    const payload={date:record.date,subjects:record.subjects,hours:record.hours?parseFloat(record.hours):null,memo:record.memo,analysis:record.analysis,images:record.images||[],updated_at:new Date().toISOString()};
+    if(record.id&&exist&&exist.length>0)await sbReq(`id=eq.${record.id}`,{method:'PATCH',body:JSON.stringify(payload)});
+    else if(!record.id)await sbReq('study_logs',{method:'POST',prefer:'resolution=merge-duplicates',body:JSON.stringify({...payload,id:record.id||genId()})});
+    else await sbReq('study_logs',{method:'POST',prefer:'resolution=merge-duplicates',body:JSON.stringify({...payload,id:record.id})});
     return'cloud';
   }catch(e){toast('云端保存失败：'+e.message);return'local'}
+}
+async function cloudDeleteRecord(id){
+  if(!sb)return false;
+  try{
+    await sbReq(`study_logs?id=eq.${id}`,{method:'DELETE'});
+    return true;
+  }catch(e){toast('云端删除失败：'+e.message);return false}
 }
 async function loadRecords(){
   if(!sb)return localRecords();
   try{
     const data=await sbReq('study_logs?select=*&order=date.desc');
-    if(data){localStorage.setItem(CACHE_KEY,JSON.stringify(data.map(r=>({date:r.date,subjects:r.subjects,hours:r.hours,memo:r.memo,analysis:r.analysis,images:r.images||[]}))));return data}
+    if(data){localStorage.setItem(CACHE_KEY,JSON.stringify(data.map(r=>({id:r.id,date:r.date,subjects:r.subjects,hours:r.hours,memo:r.memo,analysis:r.analysis,images:r.images||[]}))));return data}
   }catch{toast('云端读取失败，显示本地缓存')}
   return localRecords();
 }
@@ -447,7 +586,7 @@ async function saveSimpleRecord(){
   const btn=$('saveRecordBtn');btn.disabled=true;btn.innerHTML='<span class="spinner"></span>保存中…';
   try{const dest=await upsert(record);toast(dest==='cloud'?'已同步到云端':'已保存到本地');resetForm()}
   catch(e){toast('保存失败：'+e.message)}
-  finally{btn.innerHTML='💾 直接保存';updateRecordButtons()}
+  finally{btn.innerHTML='直接保存';updateRecordButtons()}
 }
 function resetForm(){
   images=[];renderPreviews();selectedSubjects.clear();
@@ -511,7 +650,7 @@ ${images.length>0?`- 上传图片：${images.length}张（笔记/错题等）`:'
     pending={date:today(),subjects,hours,memo,analysis:text,images:images.map(i=>i.data)};
     renderResult(text,provider,apiModel);
   }catch(e){toast('分析失败：'+e.message)}
-  finally{btn.disabled=false;btn.innerHTML='🤖 AI 分析'}
+  finally{btn.disabled=false;btn.innerHTML='AI 分析'}
 }
 
 function renderResult(text,provider,model){
@@ -543,7 +682,82 @@ function switchTab(name){
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['record','history','settings'][i]===name));
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   $('panel-'+name).classList.add('active');
+  $('deleteModeBtn').style.display=name==='history'?'inline-flex':'none';
   if(name==='history')renderHistory();
+}
+
+/* 折线图绘制 */
+function drawLineChart(records){
+  const chartArea=$('chartArea');
+  const canvas=$('lineChart');
+  if(!records||records.length===0){chartArea.style.display='none';return}
+  const now=new Date();
+  const year=now.getFullYear();
+  const month=now.getMonth();
+  const daysInMonth=new Date(year,month+1,0).getDate();
+  const monthLabel=`${year}年${month+1}月`;
+  $('chartMonth').textContent=monthLabel;
+  const dailyData=Array(daysInMonth).fill(0);
+  records.forEach(r=>{
+    const d=new Date(r.date);
+    if(d.getFullYear()===year&&d.getMonth()===month&&r.hours){
+      dailyData[d.getDate()-1]=parseFloat(r.hours)||0;
+    }
+  });
+  const maxHours=Math.max(...dailyData,1);
+  chartArea.style.display='block';
+  const ctx=canvas.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  const rect=canvas.getBoundingClientRect();
+  canvas.width=rect.width*dpr;
+  canvas.height=120*dpr;
+  ctx.scale(dpr,dpr);
+  const w=rect.width;
+  const h=120;
+  const padding={left:0,right:10,top:10,bottom:25};
+  const chartW=w-padding.left-padding.right;
+  const chartH=h-padding.top-padding.bottom;
+  ctx.clearRect(0,0,w,h);
+  ctx.strokeStyle='var(--border)';
+  ctx.lineWidth=0.5;
+  ctx.setLineDash([3,3]);
+  for(let i=0;i<=4;i++){
+    const y=padding.top+(chartH/4)*i;
+    ctx.beginPath();
+    ctx.moveTo(padding.left,y);
+    ctx.lineTo(w-padding.right,y);
+    ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  ctx.fillStyle='var(--text-3)';
+  ctx.font='10px DM Sans';
+  ctx.textAlign='center';
+  for(let d=1;d<=daysInMonth;d++){
+    if(d%5===1||daysInMonth<=10){
+      const x=padding.left+(d-0.5)*(chartW/daysInMonth);
+      ctx.fillText(d.toString(),x,h-5);
+    }
+  }
+  ctx.strokeStyle='var(--text-2)';
+  ctx.lineWidth=1.5;
+  ctx.beginPath();
+  let started=false;
+  for(let d=1;d<=daysInMonth;d++){
+    const x=padding.left+(d-0.5)*(chartW/daysInMonth);
+    const y=padding.top+chartH-(dailyData[d-1]/maxHours)*chartH;
+    if(!started){ctx.moveTo(x,y);started=true}else{ctx.lineTo(x,y)}
+  }
+  ctx.stroke();
+  ctx.fillStyle='var(--accent)';
+  for(let d=1;d<=daysInMonth;d++){
+    if(dailyData[d-1]>0){
+      const x=padding.left+(d-0.5)*(chartW/daysInMonth);
+      const y=padding.top+chartH-(dailyData[d-1]/maxHours)*chartH;
+      ctx.beginPath();
+      ctx.arc(x,y,3,0,Math.PI*2);
+      ctx.fill();
+    }
+  }
 }
 
 /* 历史回顾 */
@@ -552,6 +766,7 @@ async function renderHistory(){
   list.innerHTML='<div class="empty"><span class="spinner-sm"></span></div>';
   const filter=$('filterSel').value;
   let records=await loadRecords();
+  drawLineChart(records);
   const now=new Date();
   if(filter==='week')records=records.filter(r=>new Date(r.date)>=new Date(now-7*864e5));
   if(filter==='month')records=records.filter(r=>new Date(r.date)>=new Date(now-30*864e5));
@@ -565,12 +780,13 @@ async function renderHistory(){
   if(!records.length){list.innerHTML='<div class="empty">暂无记录<br>完成今日记录后保存即可在此查看</div>';return}
   list.innerHTML=records.map((r,i)=>{
     const tags=(r.subjects||'').split(/[,，、]/).map(s=>s.trim()).filter(Boolean);
-    const excerpt=(r.analysis||'（无 AI 分析）').replace(/【.+?】/g,'').replace(/\n/g,' ').substring(0,80)+'…';
-    return`<div class="record-item" onclick="openRecord(${i})">
+    const excerptText=r.analysis?r.analysis.replace(/【.+?】/g,'').replace(/\n/g,' ').substring(0,80)+'…':(r.memo||'（无 AI 分析）').substring(0,80)+(r.memo&&r.memo.length>80?'…':'');
+    const deleteBtn=deleteMode?`<button class="del-btn" onclick="event.stopPropagation();confirmDeleteRecord(${i})">删除</button>`:'';
+    return`<div class="record-item${deleteMode?' delete-mode':''}" onclick="${deleteMode?'':'openRecord('+i+')'}">
       <div class="record-item-top"><span class="record-date">${r.date}</span>
-        <div class="tags">${tags.slice(0,4).map(t=>`<span class="tag">${t}</span>`).join('')}${r.hours?`<span class="tag">${r.hours}h</span>`:''}${sb?'<span class="tag cloud">云端</span>':''}</div>
+        <div class="tags">${tags.slice(0,4).map(t=>`<span class="tag">${t}</span>`).join('')}${r.hours?`<span class="tag">${r.hours}h</span>`:''}${sb?'<span class="tag cloud">云端</span>':''}${deleteBtn}</div>
       </div>
-      <div class="record-excerpt">${excerpt}</div>
+      <div class="record-excerpt">${excerptText}</div>
     </div>`;
   }).join('');
 }
@@ -581,10 +797,74 @@ function openRecord(i){
   const imgs=Array.isArray(r.images)?r.images:[];
   $('modalImgs').innerHTML=imgs.map(s=>`<img src="${s}"/>`).join('');
   $('modalImgs').style.display=imgs.length?'grid':'none';
-  $('modalBody').textContent=(r.analysis||'（无 AI 分析）').replace(/【(.+?)】/g,'\n━━ $1 ━━\n').replace(/^\n/,'');
+  let bodyText='';
+  if(r.analysis){
+    bodyText=r.analysis.replace(/【(.+?)】/g,'\n━━ $1 ━━\n').replace(/^\n/,'');
+  }else if(r.memo){
+    bodyText='━━ 备注 ━━\n\n'+r.memo;
+  }else{
+    bodyText='（无 AI 分析）';
+  }
+  $('modalBody').textContent=bodyText;
   $('overlay').style.display='flex';
 }
 function closeModal(){$('overlay').style.display='none'}
+function closePwdOverlay(){$('pwdOverlay').style.display='none';$('pwdInput').value=''}
+function closeConfirmOverlay(){$('confirmOverlay').style.display='none'}
+function verifyDeletePwd(){
+  const pwd=$('pwdInput').value;
+  if(pwd===DELETE_PWD){
+    closePwdOverlay();
+    deleteMode=true;
+    $('deleteModeBtn').textContent='退出删除';
+    renderHistory();
+  }else{
+    toast('密码错误');
+  }
+}
+function toggleDeleteMode(){
+  if(deleteMode){
+    deleteMode=false;
+    $('deleteModeBtn').textContent='删除模式';
+    renderHistory();
+  }else{
+    $('pwdOverlay').style.display='flex';
+  }
+}
+async function confirmDeleteRecord(index){
+  pendingDeleteIndex=index;
+  $('confirmOverlay').style.display='flex';
+}
+async function executeDelete(){
+  if(pendingDeleteIndex===null)return;
+  const btn=$('confirmDeleteBtn');
+  btn.disabled=true;btn.textContent='删除中…';
+  const r=_records[pendingDeleteIndex];
+  const localOk=deleteLocalRecord(r.id);
+  let cloudOk=true;
+  if(sb)cloudOk=await cloudDeleteRecord(r.id);
+  closeConfirmOverlay();
+  if(cloudOk||localOk){
+    toast('删除成功');
+    deleteMode=false;
+    $('deleteModeBtn').textContent='删除模式';
+    renderHistory();
+    drawLineChart(localRecords());
+  }else{
+    toast('删除失败');
+  }
+  btn.disabled=false;btn.textContent='确认删除';
+  pendingDeleteIndex=null;
+}
+function deleteLocalRecord(id){
+  const all=localRecords();
+  const filtered=all.filter(r=>r.id!==id);
+  if(filtered.length!==all.length){
+    localStorage.setItem(CACHE_KEY,JSON.stringify(filtered));
+    return true;
+  }
+  return false;
+}
 
 /* 导出 Markdown */
 function toggleExportMenu(e){e.stopPropagation();$('exportDd').classList.toggle('open')}
@@ -609,13 +889,13 @@ function exportMd(range){
 
   filtered.forEach(r=>{
     const subs=(r.subjects||'').split(/[,，、]/).map(s=>s.trim()).filter(Boolean);
-    md+=`## 📅 ${r.date}\n\n`;
+    md+=`## ${r.date}\n\n`;
     md+=`| 项目 | 内容 |\n| :--- | :--- |\n`;
     md+=`| 学习科目 | ${subs.length?subs.join('、'):'—'} |\n`;
     md+=`| 学习时长 | ${r.hours?r.hours+'小时':'—'} |\n`;
     md+=`| 备注 | ${(r.memo||'—').replace(/\n/g,' ').replace(/\|/g,'\\|')} |\n\n`;
     if(r.analysis){
-      md+=`### 🤖 AI 分析\n\n`;
+      md+=`### AI 分析\n\n`;
       const parts=r.analysis.split(/(【.+?】)/);
       let inSection=false;
       parts.forEach(p=>{
@@ -637,12 +917,12 @@ function exportMd(range){
 function toggleApiLock(){
   apiLocked=!apiLocked;
   $('apiCfgBody').classList.toggle('cfg-locked',apiLocked);
-  $('apiLockBtn').textContent=apiLocked?'🔒 已锁定':'🔓 已解锁';
+  $('apiLockBtn').textContent=apiLocked?'已锁定':'已解锁';
 }
 function toggleSbLock(){
   sbLocked=!sbLocked;
   $('sbCfgBody').classList.toggle('cfg-locked',sbLocked);
-  $('sbLockBtn').textContent=sbLocked?'🔒 已锁定':'🔓 已解锁';
+  $('sbLockBtn').textContent=sbLocked?'已锁定':'已解锁';
 }
 
 /* 模型下拉 */
@@ -657,7 +937,7 @@ function onProviderChange(){
   $('apiKeyLabel').textContent=p==='deepseek'?'DeepSeek API Key':'硅基流动 API Key';
 }
 
-function saveApiSettings(){
+async function saveApiSettings(){
   const provider=$('apiProvider').value;
   const key=$('apiKey').value.trim();
   const custom=$('apiModel').value.trim();
@@ -665,6 +945,7 @@ function saveApiSettings(){
   if(!key){toast('请填写 API Key');return}
   cfg({apiProvider:provider,apiModel:model});saveSens('apiKey',key);
   toast('API 设置已保存');toggleApiLock();testApiConnection(false);
+  syncSettingsToCloud();
 }
 
 async function testApiConnection(showToast=true){
@@ -698,7 +979,7 @@ async function saveAndTestSb(){
   const ok=await testSb();
   st.textContent=ok?'连接成功':'连接失败，请检查配置';
   st.className='conn-status '+(ok?'ok':'err');
-  if(ok){toast('Supabase 已连接');if(!sbLocked)toggleSbLock()}
+  if(ok){toast('Supabase 已连接');if(!sbLocked)toggleSbLock();syncSettingsToCloud();}
 }
 
 /* 设置导入导出 */
@@ -724,7 +1005,7 @@ function clearLocal(){localStorage.removeItem(CACHE_KEY);toast('本地缓存已�
 function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
 
 /* 初始化 */
-function init(){
+async function init(){
   $('todayLabel').textContent=today();
   buildHoursSelect();setupDrag();
   const c=cfg();
@@ -737,6 +1018,21 @@ function init(){
   if(sbUrl&&sbKey){initSb(sbUrl,sbKey);testSb()}else setSyncStatus('sync',false,'未配置');
   if(apiKey)testApiConnection(false);else setSyncStatus('api',false,'未配置密钥');
   updateRecordButtons();
+  if(sb&&sbUrl&&sbKey){
+    const restored=await restoreSettingsFromCloud();
+    if(restored){
+      const newC=cfg();
+      if(newC.apiProvider){$('apiProvider').value=newC.apiProvider;populateModelSelect(newC.apiProvider);onProviderChange()}
+      if(newC.apiModel){$('modelSelect').value=newC.apiModel}
+      const newApiKey=readSens('apiKey');if(newApiKey)$('apiKey').value=newApiKey;
+      if(newC.sbUrl)$('sbUrl').value=newC.sbUrl;
+      const newSbKey=readSens('sbKey');if(newSbKey)$('sbKey').value=newSbKey;
+      if(newApiKey)testApiConnection(false);
+      toast('已从云端恢复配置');
+    }
+  }
+  const allRecords=await loadRecords();
+  drawLineChart(allRecords);
 }
 init();
 </script>

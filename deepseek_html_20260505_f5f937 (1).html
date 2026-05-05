@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>学习日志</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg: #f7f6f3; --bg-card: #ffffff; --bg-muted: #f0eeea;
+            --text: #1a1a18; --text-2: #6b6b65; --text-3: #9b9b93;
+            --border: rgba(0,0,0,0.09); --border-2: rgba(0,0,0,0.16);
+            --accent: #1a1a18; --green: #4caf50; --red: #e53935;
+            --radius: 12px; --radius-sm: 8px;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #141412; --bg-card: #1e1e1b; --bg-muted: #252521;
+                --text: #f0eeea; --text-2: #9b9b93; --text-3: #6b6b65;
+                --border: rgba(255,255,255,0.08); --border-2: rgba(255,255,255,0.15);
+                --accent: #f0eeea;
+            }
+        }
+        html { font-size: 16px; }
+        body { font-family: 'DM Sans', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.6; }
+        .app { max-width: 720px; margin: 0 auto; padding: 2.5rem 1.25rem 5rem; }
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2.5rem; }
+        .logo { display: flex; align-items: baseline; gap: 10px; }
+        .logo h1 { font-family: 'Noto Serif SC', serif; font-size: 21px; font-weight: 500; letter-spacing: -0.01em; }
+        .sync-indicators { display: flex; flex-direction: column; gap: 4px; }
+        .sync-row { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-3); }
+        .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-3); transition: background 0.3s; }
+        .sync-dot.ok { background: var(--green); } .sync-dot.err { background: var(--red); }
+        .date-label { font-size: 13px; color: var(--text-2); background: var(--bg-muted); border: 0.5px solid var(--border); padding: 4px 12px; border-radius: 100px; }
+        .tabs { display: flex; border-bottom: 0.5px solid var(--border); margin-bottom: 2rem; gap: 0; }
+        .tab { font-family: inherit; font-size: 14px; font-weight: 400; color: var(--text-2); background: none; border: none; padding: 9px 18px; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -0.5px; transition: color 0.15s, border-color 0.15s; }
+        .tab.active { color: var(--text); font-weight: 500; border-bottom-color: var(--text); }
+        .tab:hover:not(.active) { color: var(--text); }
+        .panel { display: none; } .panel.active { display: block; }
+        .card { background: var(--bg-card); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem; }
+        .card-title { font-size: 11px; font-weight: 500; color: var(--text-3); letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 1rem; }
+        .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .field { display: flex; flex-direction: column; gap: 5px; } .field.full { grid-column: 1 / -1; }
+        .field label { font-size: 12px; color: var(--text-2); }
+        .field input, .field textarea, .field select { font-family: inherit; font-size: 14px; color: var(--text); background: var(--bg-muted); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 9px 11px; outline: none; transition: border-color 0.15s; width: 100%; }
+        .field input:focus, .field textarea:focus { border-color: var(--border-2); }
+        .field select { cursor: pointer; appearance: auto; }
+        .field textarea { min-height: 76px; resize: vertical; line-height: 1.55; }
+        .upload-zone { border: 1px dashed var(--border-2); border-radius: var(--radius); padding: 2.5rem 2rem; text-align: center; cursor: pointer; position: relative; transition: background 0.15s, border-color 0.15s; background: var(--bg-card); }
+        .upload-zone:hover, .upload-zone.dragover { background: var(--bg-muted); border-color: var(--text-3); }
+        .upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+        .upload-icon { width: 38px; height: 38px; margin: 0 auto 12px; border: 0.5px solid var(--border-2); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .upload-icon svg { width: 17px; height: 17px; stroke: var(--text-2); fill: none; stroke-width: 1.5; }
+        .upload-zone p { font-size: 14px; color: var(--text-2); line-height: 1.65; }
+        .upload-zone strong { color: var(--text); font-weight: 500; }
+        .preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; margin-top: 1rem; }
+        .preview-item { aspect-ratio: 1; border-radius: var(--radius-sm); overflow: hidden; border: 0.5px solid var(--border); position: relative; }
+        .preview-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .remove-btn { position: absolute; top: 4px; right: 4px; width: 22px; height: 22px; background: rgba(0,0,0,0.55); border: none; border-radius: 50%; cursor: pointer; color: #fff; font-size: 12px; line-height: 1; display: flex; align-items: center; justify-content: center; }
+        .btn-primary { width: 100%; padding: 13px; margin-top: 1.25rem; font-family: inherit; font-size: 15px; font-weight: 500; background: var(--accent); color: var(--bg); border: none; border-radius: var(--radius); cursor: pointer; transition: opacity 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-primary:hover { opacity: 0.82; } .btn-primary:disabled { opacity: 0.35; cursor: not-allowed; }
+        .btn { font-family: inherit; font-size: 13px; padding: 7px 14px; background: var(--bg-card); border: 0.5px solid var(--border-2); border-radius: var(--radius-sm); cursor: pointer; color: var(--text); transition: background 0.15s; white-space: nowrap; }
+        .btn:hover { background: var(--bg-muted); }
+        .result-card { background: var(--bg-card); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-top: 1.25rem; }
+        .result-meta { display: flex; justify-content: space-between; align-items: center; padding-bottom: 1rem; margin-bottom: 1.25rem; border-bottom: 0.5px solid var(--border); }
+        .result-meta .meta-label { font-size: 13px; color: var(--text-2); }
+        .result-content { font-size: 14px; line-height: 1.85; color: var(--text); }
+        .section-title { display: block; font-size: 11px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-3); margin-top: 1.25rem; margin-bottom: 0.35rem; }
+        .section-title:first-child { margin-top: 0; }
+        .spinner { width: 15px; height: 15px; border: 2px solid rgba(255,255,255,0.25); border-top-color: rgba(255,255,255,0.9); border-radius: 50%; animation: spin 0.65s linear infinite; flex-shrink: 0; }
+        .spinner-sm { width: 13px; height: 13px; border: 1.5px solid var(--border-2); border-top-color: var(--text-2); border-radius: 50%; animation: spin 0.65s linear infinite; display: inline-block; vertical-align: middle; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.75rem; }
+        .stat-box { background: var(--bg-muted); border-radius: var(--radius-sm); padding: 14px 16px; }
+        .stat-box .s-label { font-size: 11px; color: var(--text-3); margin-bottom: 5px; }
+        .stat-box .s-value { font-family: 'Noto Serif SC', serif; font-size: 22px; font-weight: 500; color: var(--text); line-height: 1; }
+        .stat-box .s-unit { font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 400; color: var(--text-2); }
+        .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .history-header h2 { font-size: 15px; font-weight: 500; }
+        .history-header select { font-family: inherit; font-size: 13px; background: var(--bg-muted); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 6px 10px; color: var(--text); outline: none; }
+        .record-item { background: var(--bg-card); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 1.1rem 1.25rem; margin-bottom: 10px; cursor: pointer; transition: border-color 0.15s; }
+        .record-item:hover { border-color: var(--border-2); }
+        .record-item-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 7px; }
+        .record-date { font-size: 14px; font-weight: 500; }
+        .tags { display: flex; gap: 5px; flex-wrap: wrap; }
+        .tag { font-size: 11px; padding: 2px 9px; border-radius: 100px; background: var(--bg-muted); color: var(--text-2); border: 0.5px solid var(--border); }
+        .tag.cloud { color: var(--green); border-color: var(--green); background: rgba(76,175,80,0.07); }
+        .record-excerpt { font-size: 13px; color: var(--text-2); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .empty { text-align: center; padding: 3.5rem 2rem; color: var(--text-3); font-size: 14px; line-height: 1.9; }
+        .inline-row { display: flex; gap: 8px; align-items: center; } .inline-row input { flex: 1; }
+        .conn-status { font-size: 12px; color: var(--text-3); margin-left: 4px; } .conn-status.ok { color: var(--green); } .conn-status.err { color: var(--red); }
+        .hint-text { font-size: 11px; color: var(--text-3); margin-top: 4px; line-height: 1.4; }
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 1rem; }
+        .modal { background: var(--bg-card); border: 0.5px solid var(--border); border-radius: var(--radius); max-width: 580px; width: 100%; max-height: 82vh; overflow-y: auto; padding: 1.5rem; }
+        .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; padding-bottom: 1rem; border-bottom: 0.5px solid var(--border); }
+        .modal-head h3 { font-size: 15px; font-weight: 500; }
+        .modal-close { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--text-2); padding: 2px 6px; }
+        .modal-imgs { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; margin-bottom: 1.25rem; }
+        .modal-imgs img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-sm); border: 0.5px solid var(--border); }
+        .modal-body { font-size: 14px; line-height: 1.85; white-space: pre-wrap; color: var(--text); }
+        .toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 9px 20px; border-radius: 100px; font-size: 13px; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.2s; white-space: nowrap; }
+        .toast.show { opacity: 1; }
+        .btn-group { display: flex; gap: 10px; margin-top: 1.25rem; }
+        .btn-group .btn-primary { flex: 1; margin-top: 0; }
+        @media (max-width: 480px) {
+            .field-grid { grid-template-columns: 1fr; }
+            .stats-row { grid-template-columns: 1fr 1fr; }
+            .stats-row .stat-box:last-child { grid-column: 1 / -1; }
+            .btn-group { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <div class="header">
+        <div class="logo">
+            <h1>学习日志</h1>
+            <div class="sync-indicators">
+                <div class="sync-row"><div class="sync-dot" id="syncDot"></div><span id="syncLabel">云端检测中…</span></div>
+                <div class="sync-row"><div class="sync-dot" id="apiSyncDot"></div><span id="apiSyncLabel">API 检测中…</span></div>
+            </div>
+        </div>
+        <span class="date-label" id="todayLabel"></span>
+    </div>
+
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('record')">今日记录</button>
+        <button class="tab" onclick="switchTab('history')">历史回顾</button>
+        <button class="tab" onclick="switchTab('settings')">设置</button>
+    </div>
+
+    <div id="panel-record" class="panel active">
+        <div class="card">
+            <div class="card-title">今日信息</div>
+            <div class="field-grid">
+                <div class="field"><label>学习科目</label><input id="subjects" type="text" placeholder="如：数学、英语、政治" /></div>
+                <div class="field"><label>学习时长（小时）</label><input id="hours" type="number" step="0.5" min="0" placeholder="如：6" /></div>
+                <div class="field full"><label>备注</label><textarea id="memo" placeholder="今天张宇第3章做完了，积分换元有点卡…"></textarea></div>
+            </div>
+        </div>
+        <div class="upload-zone" id="uploadZone">
+            <input type="file" id="fileInput" accept="image/*" multiple onchange="handleFiles(this.files)" />
+            <div class="upload-icon"><svg viewBox="0 0 24 24"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg></div>
+            <p><strong>点击或拖拽上传今日学习照片</strong><br>笔记、错题、时间轴截图均可，支持多张</p>
+        </div>
+        <div class="preview-grid" id="previewGrid"></div>
+        <div class="btn-group">
+            <button class="btn-primary" id="saveRecordBtn" onclick="saveSimpleRecord()">💾 直接保存记录</button>
+            <button class="btn-primary" id="analyzeBtn" onclick="analyze()">🤖 AI 分析学习状态</button>
+        </div>
+        <div id="resultArea"></div>
+    </div>
+
+    <div id="panel-history" class="panel">
+        <div class="stats-row" id="statsRow"></div>
+        <div class="history-header">
+            <h2>学习记录</h2>
+            <select id="filterSel" onchange="renderHistory()">
+                <option value="all">全部</option>
+                <option value="week">近一周</option>
+                <option value="month">近一月</option>
+            </select>
+        </div>
+        <div id="recordList"></div>
+    </div>
+
+    <div id="panel-settings" class="panel">
+        <div class="card">
+            <div class="card-title">AI 分析设置</div>
+            <div class="field-grid" style="margin-bottom:12px;">
+                <div class="field">
+                    <label>API 提供商</label>
+                    <select id="apiProvider" onchange="onProviderChange()">
+                        <option value="deepseek">DeepSeek 官方</option>
+                        <option value="siliconflow">硅基流动 (SiliconFlow)</option>
+                    </select>
+                    <span class="hint-text" id="providerHint">DeepSeek 官方 API，模型支持视觉识图</span>
+                </div>
+                <div class="field">
+                    <label>模型选择</label>
+                    <div style="display:flex; gap:6px;">
+                        <select id="modelSelect" style="flex:1;" onchange="onModelSelectChange()"></select>
+                        <input id="apiModel" type="text" placeholder="自定义模型名称" style="flex:1;" />
+                    </div>
+                    <span class="hint-text">可从下拉列表选择预设模型，或直接输入自定义模型名称</span>
+                </div>
+                <div class="field full">
+                    <label id="apiKeyLabel">API Key</label>
+                    <div class="inline-row">
+                        <input id="apiKey" type="password" placeholder="sk-..." />
+                        <button class="btn" onclick="saveApiSettings()">保存</button>
+                    </div>
+                </div>
+                <div class="field full" style="margin-top:5px;">
+                    <button class="btn" id="testApiBtn" onclick="testApiConnection(true)">🔌 测试 API 连接</button>
+                    <span class="conn-status" id="apiConnStatus"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Supabase 云端存储</div>
+            <div class="field-grid" style="margin-bottom:12px;">
+                <div class="field full"><label>Project URL</label><input id="sbUrl" type="text" placeholder="https://xxx.supabase.co" /></div>
+                <div class="field full"><label>Anon Key</label><input id="sbKey" type="password" placeholder="eyJ..." /></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <button class="btn" onclick="saveAndTestSb()">保存并测试连接</button>
+                <span class="conn-status" id="connStatus"></span>
+            </div>
+            <span class="hint-text" style="margin-top:8px;display:block;">连接状态会自动检测，无需每次都手动测试。</span>
+        </div>
+
+        <div class="card">
+            <div class="card-title">数据管理</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                <button class="btn" onclick="exportData()">导出学习记录</button>
+                <button class="btn" onclick="exportSettings()">导出设置（含密钥）</button>
+                <button class="btn" onclick="document.getElementById('importSettingsFile').click()">导入设置</button>
+                <input type="file" id="importSettingsFile" accept=".json" style="display:none" onchange="importSettings(event)" />
+                <button class="btn" style="color:var(--red);" onclick="if(confirm('确认清空本地缓存？'))clearLocal()">清空本地缓存</button>
+            </div>
+            <span class="hint-text">导出设置文件可用于其他设备快速配置，请妥善保管（包含API密钥）。</span>
+        </div>
+    </div>
+</div>
+
+<div class="overlay" id="overlay" style="display:none" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+        <div class="modal-head"><h3 id="modalTitle"></h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+        <div class="modal-imgs" id="modalImgs"></div>
+        <div class="modal-body" id="modalBody"></div>
+    </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+    const CACHE_KEY = 'study_logs_v3';
+    let images = [];
+    let pending = null;
+    let sb = null;
+
+    const DEFAULT_SB_URL = 'https://epxuylxivkdfxxiucxgg.supabase.co';
+    const DEFAULT_SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVweHV5bHhpdmtkZnh4aXVjeGdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NTk2MzcsImV4cCI6MjA5MzUzNTYzN30.d3gHELymQomUzJ5AsP3kVZDT2dDW7OIEWNGyVK0by0k';
+
+    // 预设模型列表，默认硅基流动使用 Qwen/Qwen3.5-9B
+    const MODEL_PRESETS = {
+        deepseek: ['deepseek-chat', 'deepseek-reasoner'],
+        siliconflow: ['Qwen/Qwen3.5-9B', 'Qwen/Qwen2.5-VL-72B-Instruct', 'deepseek-ai/deepseek-vl2']
+    };
+    const DEFAULT_MODEL_FOR_PROVIDER = { deepseek: 'deepseek-chat', siliconflow: 'Qwen/Qwen3.5-9B' };
+    const API_ENDPOINTS = {
+        deepseek: 'https://api.deepseek.com/v1/chat/completions',
+        siliconflow: 'https://api.siliconflow.cn/v1/chat/completions'
+    };
+
+    const $ = id => document.getElementById(id);
+
+    function today() {
+        return new Date().toLocaleDateString('zh-CN',{year:'numeric',month:'2-digit',day:'2-digit'}).replace(/\//g,'-');
+    }
+
+    function cfg(update) {
+        const cur = JSON.parse(localStorage.getItem('study_cfg')||'{}');
+        if (!update) return cur;
+        localStorage.setItem('study_cfg', JSON.stringify({...cur,...update}));
+    }
+
+    function localRecords() {
+        try { return JSON.parse(localStorage.getItem(CACHE_KEY)||'[]'); } catch { return []; }
+    }
+
+    function cacheRecord(r) {
+        const all = localRecords();
+        const i = all.findIndex(x=>x.date===r.date);
+        if (i>=0) all[i]=r; else all.unshift(r);
+        localStorage.setItem(CACHE_KEY, JSON.stringify(all));
+    }
+
+    function initSb(url, key) { sb = (url && key) ? { url: url.replace(/\/$/,''), key } : null; }
+
+    async function sbReq(path, opts={}) {
+        const r = await fetch(sb.url+'/rest/v1/'+path, {
+            ...opts,
+            headers: {
+                apikey: sb.key, Authorization: 'Bearer '+sb.key,
+                'Content-Type': 'application/json', Prefer: opts.prefer||'',
+                ...(opts.headers||{})
+            }
+        });
+        if (!r.ok) { const e=await r.json().catch(()=>({})); throw new Error(e.message||r.statusText); }
+        const t = await r.text();
+        return t ? JSON.parse(t) : null;
+    }
+
+    async function testSb() {
+        if(!sb){ setSyncStatus('sync', false, '未配置'); return false; }
+        try {
+            await sbReq('study_logs?limit=1&select=id');
+            setSyncStatus('sync', true, '云端已连接');
+            $('connStatus').textContent='连接成功'; $('connStatus').className='conn-status ok';
+            return true;
+        } catch(e) {
+            setSyncStatus('sync', false, '连接失败');
+            $('connStatus').textContent='连接失败，请检查配置'; $('connStatus').className='conn-status err';
+            return false;
+        }
+    }
+
+    function setSyncStatus(type, ok, msg) {
+        const dotId = type === 'sync' ? 'syncDot' : 'apiSyncDot';
+        const labelId = type === 'sync' ? 'syncLabel' : 'apiSyncLabel';
+        $(dotId).className = 'sync-dot ' + (ok ? 'ok' : 'err');
+        $(labelId).textContent = msg;
+    }
+
+    async function upsert(record) {
+        cacheRecord(record);
+        if (!sb) return 'local';
+        try {
+            // 先检查是否已存在该日期的记录
+            const exist = await sbReq(`study_logs?date=eq.${record.date}&select=id`);
+            if (exist && exist.length > 0) {
+                // 更新现有记录
+                await sbReq(`study_logs?date=eq.${record.date}`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({
+                        subjects: record.subjects,
+                        hours: record.hours ? parseFloat(record.hours) : null,
+                        memo: record.memo,
+                        analysis: record.analysis,
+                        images: record.images || [],
+                        updated_at: new Date().toISOString()
+                    })
+                });
+            } else {
+                // 插入新记录
+                await sbReq('study_logs', {
+                    method: 'POST',
+                    prefer: 'resolution=merge-duplicates',
+                    body: JSON.stringify({
+                        date: record.date,
+                        subjects: record.subjects,
+                        hours: record.hours ? parseFloat(record.hours) : null,
+                        memo: record.memo,
+                        analysis: record.analysis,
+                        images: record.images || [],
+                        updated_at: new Date().toISOString()
+                    })
+                });
+            }
+            return 'cloud';
+        } catch (e) {
+            toast('云端保存失败：' + e.message);
+            return 'local';
+        }
+    }
+
+    async function loadRecords() {
+        if (!sb) return localRecords();
+        try {
+            const data = await sbReq('study_logs?select=*&order=date.desc');
+            if (data) {
+                localStorage.setItem(CACHE_KEY, JSON.stringify(data.map(r=>({
+                    date:r.date, subjects:r.subjects, hours:r.hours,
+                    memo:r.memo, analysis:r.analysis, images:r.images||[]
+                }))));
+                return data;
+            }
+        } catch { toast('云端读取失败，显示本地缓存'); }
+        return localRecords();
+    }
+
+    function populateModelSelect(provider) {
+        const select = $('modelSelect');
+        select.innerHTML = '';
+        const presets = MODEL_PRESETS[provider] || [];
+        presets.forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m; opt.textContent = m;
+            select.appendChild(opt);
+        });
+        const customOpt = document.createElement('option');
+        customOpt.value = '__custom__'; customOpt.textContent = '自定义...';
+        select.appendChild(customOpt);
+    }
+
+    function onModelSelectChange() {
+        const val = $('modelSelect').value;
+        if (val !== '__custom__') {
+            $('apiModel').value = val;
+        }
+    }
+
+    function onProviderChange() {
+        const provider = $('apiProvider').value;
+        populateModelSelect(provider);
+        const defaultModel = DEFAULT_MODEL_FOR_PROVIDER[provider] || '';
+        $('modelSelect').value = defaultModel;
+        $('apiModel').value = defaultModel;
+        updateProviderUI(provider);
+    }
+
+    function updateProviderUI(provider) {
+        $('providerHint').textContent = provider==='deepseek' ? 'DeepSeek 官方 API，deepseek-chat 模型支持视觉识图' : '硅基流动平台，推荐使用 Qwen3.5-9B 等视觉模型';
+        $('apiKeyLabel').textContent = provider==='deepseek' ? 'DeepSeek API Key' : '硅基流动 API Key';
+    }
+
+    function saveApiSettings() {
+        const provider = $('apiProvider').value;
+        const apiKey = $('apiKey').value.trim();
+        let apiModel = $('modelSelect').value === '__custom__' ? $('apiModel').value.trim() : $('modelSelect').value;
+        if (!apiModel) apiModel = DEFAULT_MODEL_FOR_PROVIDER[provider] || '';
+        if (!apiKey) { toast('请填写 API Key'); return; }
+        cfg({ apiProvider:provider, apiKey:apiKey, apiModel:apiModel });
+        toast('API 设置已保存');
+        testApiConnection(false);
+    }
+
+    async function testApiConnection(showToast = true) {
+        const c = cfg();
+        const apiKey = c.apiKey || c.dsKey;
+        const statusEl = $('apiConnStatus');
+        if (!apiKey) {
+            setSyncStatus('api', false, '未配置密钥');
+            if (statusEl) { statusEl.textContent = '未配置密钥'; statusEl.className = 'conn-status err'; }
+            return false;
+        }
+        const provider = c.apiProvider || 'deepseek';
+        const model = c.apiModel || DEFAULT_MODEL_FOR_PROVIDER[provider] || 'deepseek-chat';
+        const endpoint = API_ENDPOINTS[provider] || API_ENDPOINTS['deepseek'];
+        setSyncStatus('api', false, '检测中…');
+        if (statusEl) { statusEl.textContent = '测试中…'; statusEl.className = 'conn-status'; }
+        try {
+            const resp = await fetch(endpoint, {
+                method:'POST',
+                headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+apiKey },
+                body: JSON.stringify({ model:model, max_tokens:5, messages:[{role:'user',content:'Hi'}] })
+            });
+            const data = await resp.json();
+            if (!resp.ok) throw new Error(data.error?.message || '请求失败');
+            setSyncStatus('api', true, 'API 已连接');
+            if (statusEl) { statusEl.textContent = '连接成功 ✓'; statusEl.className = 'conn-status ok'; }
+            if (showToast) toast('API 连接正常');
+            return true;
+        } catch(e) {
+            setSyncStatus('api', false, '连接失败');
+            if (statusEl) { statusEl.textContent = '连接失败: '+e.message; statusEl.className = 'conn-status err'; }
+            if (showToast) toast('API 测试失败，请检查配置');
+            return false;
+        }
+    }
+
+    async function saveAndTestSb() {
+        const url=$('sbUrl').value.trim(), key=$('sbKey').value.trim();
+        cfg({sbUrl:url, sbKey:key}); initSb(url,key);
+        const st=$('connStatus'); st.textContent='测试中…'; st.className='conn-status';
+        const ok = await testSb();
+        st.textContent = ok?'连接成功':'连接失败，请检查配置';
+        st.className = 'conn-status '+(ok?'ok':'err');
+    }
+
+    function switchTab(name) {
+        document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['record','history','settings'][i]===name));
+        document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+        $('panel-'+name).classList.add('active');
+        if (name==='history') renderHistory();
+    }
+
+    function setupDrag() {
+        const z=$('uploadZone');
+        z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('dragover');});
+        z.addEventListener('dragleave',()=>z.classList.remove('dragover'));
+        z.addEventListener('drop',e=>{e.preventDefault();z.classList.remove('dragover');handleFiles(e.dataTransfer.files);});
+    }
+
+    function handleFiles(files) {
+        Array.from(files).forEach(f=>{
+            if(!f.type.startsWith('image/')) return;
+            const rd=new FileReader();
+            rd.onload=e=>{ images.push({name:f.name,data:e.target.result}); renderPreviews(); updateRecordButtons(); };
+            rd.readAsDataURL(f);
+        });
+    }
+
+    function renderPreviews() {
+        $('previewGrid').innerHTML=images.map((img,i)=>`
+            <div class="preview-item"><img src="${img.data}" /><button class="remove-btn" onclick="removeImg(${i})">✕</button></div>`).join('');
+    }
+
+    function removeImg(i) { images.splice(i,1); renderPreviews(); updateRecordButtons(); }
+
+    function hasContent() {
+        return $('subjects').value.trim() || $('hours').value.trim() || $('memo').value.trim() || images.length > 0;
+    }
+
+    function updateRecordButtons() {
+        const enable = hasContent();
+        $('saveRecordBtn').disabled = !enable;
+        $('analyzeBtn').disabled = !enable;
+    }
+
+    ['subjects','hours','memo'].forEach(id => {
+        document.getElementById(id).addEventListener('input', updateRecordButtons);
+    });
+
+    async function saveSimpleRecord() {
+        if (!hasContent()) { toast('请至少填写一项信息'); return; }
+        const subjects=$('subjects').value, hours=$('hours').value, memo=$('memo').value;
+        const record = { date: today(), subjects, hours, memo, analysis: '', images: images.map(i=>i.data) };
+        const btn = $('saveRecordBtn');
+        btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>保存中…';
+        try {
+            const dest = await upsert(record);
+            toast(dest==='cloud'?'已同步到云端':'已保存到本地');
+            btn.textContent = '💾 直接保存记录'; btn.disabled = false;
+            images = []; renderPreviews();
+            $('subjects').value=''; $('hours').value=''; $('memo').value='';
+            updateRecordButtons();
+        } catch(e) {
+            toast('保存失败：'+e.message);
+            btn.disabled = false; btn.textContent = '💾 直接保存记录';
+        }
+    }
+
+    async function analyze() {
+        const c = cfg();
+        const apiKey = c.apiKey || c.dsKey;
+        if (!apiKey) { toast('请先在设置中填写 API Key'); switchTab('settings'); return; }
+        if (!hasContent()) { toast('请填写学习信息或上传图片'); return; }
+
+        const provider = c.apiProvider || 'deepseek';
+        const apiModel = c.apiModel || DEFAULT_MODEL_FOR_PROVIDER[provider] || 'deepseek-chat';
+        const endpoint = API_ENDPOINTS[provider] || API_ENDPOINTS['deepseek'];
+        const subjects=$('subjects').value, hours=$('hours').value, memo=$('memo').value;
+        const btn = $('analyzeBtn');
+        btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>分析中…';
+
+        const content = [];
+        if (images.length > 0) {
+            images.forEach(img => content.push({ type:'image_url', image_url:{ url:img.data } }));
+        }
+        content.push({
+            type:'text',
+            text: `你是一位考研学习辅导助手，请根据以下信息和${images.length>0?'图片':''}，对今日学习情况进行详细分析。
+
+基本信息：
+- 日期：${today()}
+- 科目：${subjects||'未填写'}
+- 学习时长：${hours?hours+'小时':'未填写'}
+- 备注：${memo||'无'}
+
+请从以下维度分析，用【标题】格式，直接段落输出，不要用Markdown符号：
+
+【今日内容概览】
+简述${images.length>0?'图片中':''}学习的主要内容和知识点。
+
+【逐科分析】
+针对每个科目的掌握情况、存在问题进行分析。
+
+【错题 / 薄弱点】
+指出${images.length>0?'图片中或':''}备注中体现的错误和薄弱点。
+
+【学习效率评估】
+根据时长和内容量给出评估，是否高效、有哪些可改进之处。
+
+【明日计划建议】
+给出具体可执行的明日学习建议。`
+        });
+
+        try {
+            const resp = await fetch(endpoint, {
+                method:'POST',
+                headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+apiKey },
+                body: JSON.stringify({ model:apiModel, max_tokens:2000, messages:[{role:'user', content}] })
+            });
+            const data = await resp.json();
+            if (!resp.ok) throw new Error(data.error?.message || '请求失败');
+            const text = data.choices?.[0]?.message?.content || '';
+            pending = { date:today(), subjects, hours, memo, analysis: text, images: images.map(i=>i.data) };
+            renderResult(text, provider, apiModel);
+        } catch(e) {
+            toast('分析失败：'+e.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '🤖 AI 分析学习状态';
+        }
+    }
+
+    function renderResult(text, provider, model) {
+        const providerLabel = provider==='siliconflow'?'硅基流动':'DeepSeek';
+        const html = text.replace(/【(.+?)】/g,'<span class="section-title">$1</span>').replace(/\n/g,'<br>');
+        $('resultArea').innerHTML = `
+            <div class="result-card">
+                <div class="result-meta">
+                    <span class="meta-label">分析完成 · ${today()} · ${providerLabel}/${model}</span>
+                    <button class="btn" id="saveAnalysisBtn" onclick="saveAnalysisRecord()">保存分析结果</button>
+                </div>
+                <div class="result-content">${html}</div>
+            </div>`;
+    }
+
+    async function saveAnalysisRecord() {
+        if (!pending) return;
+        const btn = $('saveAnalysisBtn');
+        btn.disabled = true; btn.innerHTML = '<span class="spinner-sm"></span> 保存中…';
+        try {
+            const dest = await upsert(pending);
+            toast(dest==='cloud'?'已同步到云端':'已保存到本地');
+            btn.textContent = dest==='cloud'?'已同步云端 ✓':'已保存本地 ✓';
+            images = []; renderPreviews();
+            $('subjects').value=''; $('hours').value=''; $('memo').value='';
+            updateRecordButtons();
+            pending = null;
+        } catch(e) {
+            toast('保存失败：'+e.message);
+            btn.disabled = false; btn.textContent = '保存分析结果';
+        }
+    }
+
+    let _records = [];
+    async function renderHistory() {
+        const list=$('recordList');
+        list.innerHTML='<div class="empty"><span class="spinner-sm"></span></div>';
+        const filter=$('filterSel').value;
+        let records=await loadRecords();
+        const now=new Date();
+        if(filter==='week') records=records.filter(r=>new Date(r.date)>=new Date(now-7*864e5));
+        if(filter==='month') records=records.filter(r=>new Date(r.date)>=new Date(now-30*864e5));
+        _records=records;
+
+        const totalH=records.reduce((s,r)=>s+(parseFloat(r.hours)||0),0);
+        const subs=[...new Set(records.flatMap(r=>(r.subjects||'').split(/[,，、]/).map(s=>s.trim()).filter(Boolean)))];
+
+        $('statsRow').innerHTML=`
+            <div class="stat-box"><div class="s-label">记录天数</div><div class="s-value">${records.length}</div></div>
+            <div class="stat-box"><div class="s-label">累计学习</div><div class="s-value">${totalH.toFixed(1)}<span class="s-unit"> h</span></div></div>
+            <div class="stat-box"><div class="s-label">涉及科目</div><div class="s-value" style="font-size:15px;padding-top:3px">${subs.slice(0,3).join('、')||'—'}</div></div>`;
+
+        if(!records.length){ list.innerHTML='<div class="empty">暂无记录<br>完成今日分析后保存即可在此查看</div>'; return; }
+
+        list.innerHTML=records.map((r,i)=>{
+            const tags=(r.subjects||'').split(/[,，、]/).map(s=>s.trim()).filter(Boolean);
+            const excerpt=(r.analysis||'无分析内容').replace(/【.+?】/g,'').replace(/\n/g,' ').substring(0,80)+'…';
+            return `<div class="record-item" onclick="openRecord(${i})">
+                <div class="record-item-top"><span class="record-date">${r.date}</span>
+                    <div class="tags">${tags.slice(0,3).map(t=>`<span class="tag">${t}</span>`).join('')}${r.hours?`<span class="tag">${r.hours}h</span>`:''}${sb?'<span class="tag cloud">云端</span>':''}</div>
+                </div>
+                <div class="record-excerpt">${excerpt}</div>
+            </div>`;
+        }).join('');
+    }
+
+    function openRecord(i) {
+        const r=_records[i]; if(!r) return;
+        $('modalTitle').textContent=r.date+' 学习记录';
+        const imgs=Array.isArray(r.images)?r.images:[];
+        $('modalImgs').innerHTML=imgs.map(s=>`<img src="${s}" />`).join('');
+        $('modalImgs').style.display=imgs.length?'grid':'none';
+        $('modalBody').textContent=(r.analysis||'暂无分析内容').replace(/【(.+?)】/g,'\n━━ $1 ━━\n').replace(/^\n/,'');
+        $('overlay').style.display='flex';
+    }
+
+    function closeModal(){$('overlay').style.display='none';}
+    function exportData(){
+        const blob=new Blob([JSON.stringify(_records.length?_records:localRecords(),null,2)],{type:'application/json'});
+        const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='study_logs.json'; a.click();
+    }
+    function exportSettings(){
+        const c=cfg();
+        const obj={apiProvider:c.apiProvider,apiKey:c.apiKey,apiModel:c.apiModel,sbUrl:c.sbUrl,sbKey:c.sbKey};
+        const blob=new Blob([JSON.stringify(obj,null,2)],{type:'application/json'});
+        const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='study_settings.json'; a.click();
+        toast('设置已导出，请妥善保管');
+    }
+    function importSettings(e){
+        const f=e.target.files[0]; if(!f) return;
+        const rd=new FileReader();
+        rd.onload=ev=>{
+            try{
+                const d=JSON.parse(ev.target.result);
+                if(d.apiKey){ cfg({...d}); toast('设置导入成功，刷新页面'); setTimeout(()=>location.reload(),1000); }
+                else toast('无效的设置文件');
+            }catch{ toast('解析失败'); }
+        };
+        rd.readAsText(f);
+    }
+    function clearLocal(){ localStorage.removeItem(CACHE_KEY); toast('本地缓存已清空'); }
+    function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
+
+    function init() {
+        $('todayLabel').textContent = today();
+        const c = cfg();
+        if (c.dsKey && !c.apiKey) {
+            cfg({ apiProvider:'deepseek', apiKey:c.dsKey, apiModel:DEFAULT_MODEL_FOR_PROVIDER['deepseek'] });
+            Object.assign(c, { apiProvider:'deepseek', apiKey:c.dsKey, apiModel:DEFAULT_MODEL_FOR_PROVIDER['deepseek'] });
+        }
+        const provider = c.apiProvider || 'deepseek';
+        $('apiProvider').value = provider;
+        populateModelSelect(provider);
+        const savedModel = c.apiModel || DEFAULT_MODEL_FOR_PROVIDER[provider] || 'deepseek-chat';
+        const presets = MODEL_PRESETS[provider] || [];
+        if (presets.includes(savedModel)) {
+            $('modelSelect').value = savedModel;
+            $('apiModel').value = savedModel;
+        } else {
+            $('modelSelect').value = '__custom__';
+            $('apiModel').value = savedModel;
+        }
+        if (c.apiKey) $('apiKey').value = c.apiKey;
+        if (!c.apiKey && c.dsKey) $('apiKey').value = c.dsKey;
+        updateProviderUI(provider);
+
+        const sbUrl = c.sbUrl || DEFAULT_SB_URL;
+        const sbKey = c.sbKey || DEFAULT_SB_KEY;
+        $('sbUrl').value = sbUrl; $('sbKey').value = sbKey;
+        if (!c.sbUrl || !c.sbKey) cfg({ sbUrl, sbKey });
+        initSb(sbUrl, sbKey);
+        testSb();
+        testApiConnection(false);
+        setupDrag();
+        updateRecordButtons();
+    }
+
+    init();
+</script>
+</body>
+</html>

@@ -269,18 +269,52 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
   .lb-analysis{font-size:12px;color:rgba(240,238,234,.4);line-height:1.75;white-space:pre-line}
   .lightbox-counter{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.3);font-size:12px;letter-spacing:.05em}
 
+@media(max-width:768px) and (min-width:481px){
+  .timeline{max-width:100%}
+  .tl-date{font-size:14px;padding-right:12px}
+  .tl-bubble{max-width:300px}
+  .tl-item:nth-child(even) .tl-date{padding-left:12px}
+  .lightbox-inner{width:92vw}
+}
 @media(max-width:480px){
+  .app{padding:1.5rem 1rem 6rem}
+  .header{flex-wrap:wrap;gap:8px;margin-bottom:1.5rem}
+  .logo{flex-direction:column;align-items:flex-start;gap:4px}
+  .logo h1{font-size:20px}
   .field-grid{grid-template-columns:1fr}
   .stats-row{grid-template-columns:1fr 1fr}
   .stats-row .stat-box:last-child{grid-column:1/-1}
   .btn-group{flex-direction:column}
+  .tab{padding:6px 14px;font-size:12px}
+  /* 时间线移动端 */
+  .timeline{max-width:100%;padding:0}
   .timeline::before{display:none}
   .tl-dot-col{display:none}
-  .tl-date{flex:none;width:100%;text-align:left!important;padding:0 0 4px;order:0!important}
-  .tl-bubble{flex:none;width:100%;max-width:none;order:1!important}
+  .tl-item{flex-direction:column;align-items:stretch;margin-bottom:1.25rem}
+  .tl-date{width:100%!important;text-align:left!important;padding:0 0 6px!important;font-size:13px;order:0!important}
+  .tl-bubble{width:100%;max-width:none!important;order:1!important}
+  .tl-item:nth-child(even) .tl-date{text-align:left!important;padding:0 0 6px!important;order:0!important}
+  .tl-item:nth-child(even) .tl-bubble{order:1!important}
+  .tl-item:nth-child(even) .tl-dot-col{display:none}
+  .tl-subs{font-size:12px}
+  .tl-desc{font-size:12px;-webkit-line-clamp:3}
+  .tl-info{padding:8px 10px}
+  .tl-filter{gap:6px;margin-bottom:1.25rem}
+  .tl-filter-btn{font-size:11px;padding:4px 10px}
+  /* 弹窗移动端 */
   .lightbox-inner{flex-direction:column;width:96vw;max-height:92vh}
   .lightbox-left{padding:.75rem}
   .lightbox-right{width:100%;border-left:none;border-top:1px solid rgba(255,255,255,.05);padding:1.25rem 1.5rem 1.75rem;max-height:38vh}
+  /* 记录列表移动端 */
+  .record-item{padding:.9rem 1rem}
+  .record-date{font-size:13px}
+  .record-excerpt{font-size:12px}
+  /* 设置面板移动端 */
+  .settings-section{padding:1rem}
+  /* AI助手移动端 */
+  .assistant-panel{width:min(340px,calc(100vw - 1.5rem));right:.75rem;bottom:5rem;max-height:50vh}
+  .assistant-fab{bottom:1rem;right:.75rem;width:40px;height:40px}
+  .assistant-hint{right:3.5rem;bottom:1.5rem;font-size:11px;padding:6px 10px}
 }
 </style>
 </head>

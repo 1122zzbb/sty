@@ -363,6 +363,8 @@ CREATE POLICY "公开读写" ON app_settings FOR ALL USING (true);</pre>
 <script>
 const CACHE_KEY='study_logs_v4';
 const CFG_KEY='study_cfg_v2';
+const DEFAULT_SB_URL='https://epxuylxivkdfxxiucxgg.supabase.co';
+const DEFAULT_SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVweHV5bHhpdmtkZnh4aXVjeGdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NTk2MzcsImV4cCI6MjA5MzUzNTYzN30.d3gHELymQomUzJ5AsP3kVZDT2dDW7OIEWNGyVK0by0k';
 let images=[];
 let pending=null;
 let sb=null;
@@ -504,30 +506,22 @@ async function syncSettingsToCloud(){
   for(const obj of objs){
     await cloudSaveSetting(obj.key,obj.value);
   }
-  const apiKey=readSens('apiKey');
-  const sbKey=readSens('sbKey');
-  if(apiKey)await cloudSaveSetting('encryptedApiKey',apiKey);
-  if(sbKey)await cloudSaveSetting('encryptedSbKey',sbKey);
+  if(c.apiKey)await cloudSaveSetting('encryptedApiKey',c.apiKey);
+  if(c.sbKey)await cloudSaveSetting('encryptedSbKey',c.sbKey);
 }
 async function restoreSettingsFromCloud(){
   if(!sb)return false;
   const cloudSettings=await cloudLoadSettings();
   if(!cloudSettings)return false;
   let restored=false;
-  if(cloudSettings.apiProvider||cloudSettings.apiModel){
+  if(cloudSettings.apiProvider||cloudSettings.apiModel||cloudSettings.sbUrl||cloudSettings.encryptedSbKey||cloudSettings.encryptedApiKey){
     const update={};
     if(cloudSettings.apiProvider)update.apiProvider=cloudSettings.apiProvider;
     if(cloudSettings.apiModel)update.apiModel=cloudSettings.apiModel;
     if(cloudSettings.sbUrl)update.sbUrl=cloudSettings.sbUrl;
+    if(cloudSettings.encryptedApiKey)update.apiKey=cloudSettings.encryptedApiKey;
+    if(cloudSettings.encryptedSbKey)update.sbKey=cloudSettings.encryptedSbKey;
     cfg(update);
-    restored=true;
-  }
-  if(cloudSettings.encryptedApiKey){
-    cfg({apiKey:cloudSettings.encryptedApiKey});
-    restored=true;
-  }
-  if(cloudSettings.encryptedSbKey){
-    cfg({sbKey:cloudSettings.encryptedSbKey});
     restored=true;
   }
   return restored;
@@ -1008,28 +1002,25 @@ function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show')
 async function init(){
   $('todayLabel').textContent=today();
   buildHoursSelect();setupDrag();
+  initSb(DEFAULT_SB_URL,DEFAULT_SB_KEY);
+  testSb();
   const c=cfg();
   const provider=c.apiProvider||'siliconflow';
   $('apiProvider').value=provider;populateModelSelect(provider);onProviderChange();
   if(c.apiModel){$('modelSelect').value=c.apiModel}
   const apiKey=readSens('apiKey');if(apiKey)$('apiKey').value=apiKey;
-  const sbUrl=c.sbUrl||'';const sbKey=readSens('sbKey');
-  $('sbUrl').value=sbUrl;if(sbKey)$('sbKey').value=sbKey;
-  if(sbUrl&&sbKey){initSb(sbUrl,sbKey);testSb()}else setSyncStatus('sync',false,'未配置');
+  const sbUrl=c.sbUrl||DEFAULT_SB_URL;const sbKey=readSens('sbKey')||DEFAULT_SB_KEY;
+  $('sbUrl').value=sbUrl;$('sbKey').value=sbKey;
   if(apiKey)testApiConnection(false);else setSyncStatus('api',false,'未配置密钥');
   updateRecordButtons();
-  if(sb&&sbUrl&&sbKey){
-    const restored=await restoreSettingsFromCloud();
-    if(restored){
-      const newC=cfg();
-      if(newC.apiProvider){$('apiProvider').value=newC.apiProvider;populateModelSelect(newC.apiProvider);onProviderChange()}
-      if(newC.apiModel){$('modelSelect').value=newC.apiModel}
-      const newApiKey=readSens('apiKey');if(newApiKey)$('apiKey').value=newApiKey;
-      if(newC.sbUrl)$('sbUrl').value=newC.sbUrl;
-      const newSbKey=readSens('sbKey');if(newSbKey)$('sbKey').value=newSbKey;
-      if(newApiKey)testApiConnection(false);
-      toast('已从云端恢复配置');
-    }
+  const restored=await restoreSettingsFromCloud();
+  if(restored){
+    const newC=cfg();
+    if(newC.apiProvider){$('apiProvider').value=newC.apiProvider;populateModelSelect(newC.apiProvider);onProviderChange()}
+    if(newC.apiModel){$('modelSelect').value=newC.apiModel}
+    const newApiKey=readSens('apiKey');if(newApiKey)$('apiKey').value=newApiKey;
+    if(newApiKey)testApiConnection(false);
+    toast('已从云端恢复配置');
   }
   const allRecords=await loadRecords();
   drawLineChart(allRecords);

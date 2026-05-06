@@ -1084,7 +1084,7 @@ async function renderHistory(){
   const totalH=records.reduce((s,r)=>s+(parseFloat(r.hours)||0),0);
   const subs=[...new Set(records.flatMap(r=>(r.subjects||'').split(/[,，、]/).map(s=>s.trim()).filter(Boolean)))];
   $('statsRow').innerHTML=`
-    <div class="stat-box"><div class="s-label">记录天数</div><div class="s-value">${records.length}</div></div>
+    <div class="stat-box"><div class="s-label">记录天数</div><div class="s-value">${new Set(records.map(r=>r.date)).size}</div></div>
     <div class="stat-box"><div class="s-label">累计学习</div><div class="s-value">${totalH.toFixed(1)}<span class="s-unit"> h</span></div></div>
     <div class="stat-box"><div class="s-label">涉及科目</div><div class="s-value" style="font-size:15px;padding-top:3px">${subs.slice(0,4).join('、')||'—'}</div></div>`;
   if(!records.length){list.innerHTML='<div class="empty">暂无记录<br>完成今日记录后保存即可在此查看</div>';return}

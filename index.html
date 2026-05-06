@@ -440,6 +440,173 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     transform: translateX(-50%) translateY(0);
   }
 }
+
+/* ── 移动端助手 Panel ── */
+.mobile-assistant-tab { display: none; }
+.mobile-assistant-panel { display: none; }
+
+@media(max-width:640px) {
+  .mobile-assistant-tab { display: flex !important; }
+  .assistant-fab, .assistant-hint, .assistant-panel { display: none !important; }
+
+  .mobile-assistant-panel.active { display: flex !important; }
+
+  .mobile-assistant-panel {
+    display: none;
+    flex-direction: column;
+    height: calc(100dvh - 56px - env(safe-area-inset-bottom));
+    margin: -1.25rem -1rem 0;
+    background: var(--bg);
+    overflow: hidden;
+  }
+  .mobile-assistant-panel.active { display: flex !important; }
+  .header.hide { display: none; }
+
+  .ma-welcome {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 2rem 1rem;
+    text-align: center;
+    gap: 8px;
+  }
+  .ma-welcome-logo {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: var(--bg-muted);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 8px;
+  }
+  .ma-welcome-logo svg { stroke: var(--text-2); }
+  .ma-welcome-title {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 22px; font-weight: 500;
+    color: var(--text); margin: 0;
+  }
+  .ma-welcome-sub {
+    font-size: 14px; color: var(--text-3); margin: 0 0 20px;
+  }
+
+  .ma-suggest-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+    max-width: 320px;
+  }
+  .ma-suggest-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 14px;
+    background: var(--bg-card);
+    border: .5px solid var(--border);
+    border-radius: 14px;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    transition: background .12s, transform .1s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .ma-suggest-card:active { background: var(--bg-muted); transform: scale(.97); }
+  .ma-suggest-icon { font-size: 20px; }
+  .ma-suggest-text { font-size: 13px; color: var(--text-2); font-weight: 400; line-height: 1.3; }
+
+  .ma-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 16px 8px;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+  .ma-body::-webkit-scrollbar { display: none; }
+
+  .ma-msg-wrap { display: flex; margin-bottom: 12px; align-items: flex-end; gap: 8px; }
+  .ma-msg-wrap.user { justify-content: flex-end; }
+  .ma-msg-wrap.ai  { justify-content: flex-start; }
+  .ma-avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--bg-muted);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; flex-shrink: 0;
+  }
+  .ma-bubble {
+    max-width: 78%;
+    padding: 10px 14px;
+    border-radius: 20px;
+    font-size: 14px; line-height: 1.55;
+    word-break: break-word;
+  }
+  .ma-bubble.user {
+    background: var(--accent); color: var(--bg);
+    border-bottom-right-radius: 4px;
+  }
+  .ma-bubble.ai {
+    background: var(--bg-card); color: var(--text);
+    border: .5px solid var(--border);
+    border-bottom-left-radius: 4px;
+  }
+  .ma-bubble.typing { color: var(--text-3); font-style: italic; background: transparent; border: none; padding-left: 4px; }
+
+  .ma-action-card {
+    background: var(--bg-card);
+    border: .5px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 7px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background .12s, transform .1s;
+  }
+  .ma-action-card:active { background: var(--bg-muted); transform: scale(.98); }
+  .ma-action-title { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
+  .ma-action-desc  { font-size: 12px; color: var(--text-2); }
+
+  .ma-input-wrap {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    padding: 10px 16px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
+    border-top: .5px solid var(--border);
+    background: var(--bg-card);
+    flex-shrink: 0;
+  }
+  .ma-input {
+    flex: 1;
+    font-family: inherit;
+    font-size: 16px;
+    color: var(--text);
+    background: var(--bg-muted);
+    border: .5px solid var(--border);
+    border-radius: 22px;
+    padding: 10px 16px;
+    outline: none;
+    resize: none;
+    max-height: 120px;
+    line-height: 1.45;
+    -webkit-appearance: none;
+    transition: border-color .15s;
+  }
+  .ma-input:focus { border-color: var(--border-2); }
+  .ma-input::placeholder { color: var(--text-3); }
+  .ma-send {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: var(--accent); color: var(--bg);
+    border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: opacity .15s, transform .1s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .ma-send:active { transform: scale(.9); }
+  .ma-send:disabled { opacity: .3; }
+}
+
 /* ── 底部导航栏（移动端专属） ── */
 .bottom-nav{display:none}
 @media(max-width:640px){
@@ -514,9 +681,6 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
   .lightbox-left{padding:.75rem}
   .lightbox-right{width:100%;border-left:none;border-top:1px solid rgba(255,255,255,.05);padding:1rem 1.25rem 1.5rem;max-height:35vh}
   .toast{bottom:70px}
-  .assistant-fab{bottom:68px;right:1rem;width:42px;height:42px}
-  .assistant-panel{width:calc(100vw - 1.5rem);right:.75rem;bottom:112px;max-height:52vh}
-  .assistant-hint{right:3.75rem;bottom:72px;max-width:calc(100vw - 5rem);white-space:normal}
   .lock-bar{align-items:flex-start}
   .modal{padding:1.25rem;border-radius:16px 16px 0 0;max-height:90vh}
 }
@@ -599,6 +763,11 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
   <button class="bottom-nav-btn" onclick="switchTab('settings')" data-tab="settings">
     <svg viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
     设置
+  </button>
+  <!-- 移动端专属：助手 Tab -->
+  <button class="bottom-nav-btn mobile-assistant-tab" onclick="switchTab('assistant')" data-tab="assistant">
+    <svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 1 7 7c0 2.6-1.4 4.8-3.5 6L14 17H10l-1.5-2C6.4 13.8 5 11.6 5 9a7 7 0 0 1 7-7z"/><line x1="10" y1="20" x2="14" y2="20"/><line x1="11" y1="22" x2="13" y2="22"/></svg>
+    助手
   </button>
 </nav>
 
@@ -797,6 +966,50 @@ CREATE POLICY "公开读写" ON app_settings FOR ALL USING (true);</pre>
       <span class="hint-text">导出的设置文件可在新设备导入快速配置，密钥经过混淆处理，请妥善保管</span>
     </div>
   </div>
+</div>
+
+<!-- 移动端助手 Panel（必须放在 .app 内） -->
+<div id="panel-assistant" class="panel mobile-assistant-panel">
+
+  <div class="ma-welcome" id="maWelcome">
+    <div class="ma-welcome-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" width="40" height="40"><path d="M12 2a7 7 0 0 1 7 7c0 2.6-1.4 4.8-3.5 6L14 17H10l-1.5-2C6.4 13.8 5 11.6 5 9a7 7 0 0 1 7-7z"/><line x1="10" y1="20" x2="14" y2="20"/><line x1="11" y1="22" x2="13" y2="22"/></svg>
+    </div>
+    <h2 class="ma-welcome-title">你好，振标</h2>
+    <p class="ma-welcome-sub">今天学了什么？</p>
+
+    <div class="ma-suggest-grid">
+      <button class="ma-suggest-card" onclick="maExample('今天学了数学，帮我记录一下')">
+        <span class="ma-suggest-icon">📐</span>
+        <span class="ma-suggest-text">记录数学</span>
+      </button>
+      <button class="ma-suggest-card" onclick="maExample('今天学了英语，帮我记录一下')">
+        <span class="ma-suggest-icon">📖</span>
+        <span class="ma-suggest-text">记录英语</span>
+      </button>
+      <button class="ma-suggest-card" onclick="maExample('本周学了多少小时')">
+        <span class="ma-suggest-icon">📊</span>
+        <span class="ma-suggest-text">本周统计</span>
+      </button>
+      <button class="ma-suggest-card" onclick="maExample('考研数学怎么复习比较好')">
+        <span class="ma-suggest-icon">💡</span>
+        <span class="ma-suggest-text">学习建议</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="ma-body" id="maBody" style="display:none"></div>
+
+  <div class="ma-input-wrap" id="maInputWrap">
+    <textarea class="ma-input" id="maInput" rows="1" placeholder="给 AI 发消息…"
+      oninput="maAutoResize(this)"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();maSend()}">
+    </textarea>
+    <button class="ma-send" id="maSend" onclick="maSend()">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    </button>
+  </div>
+
 </div>
 
 <div class="overlay" id="overlay" style="display:none" onclick="if(event.target===this)closeModal()">
@@ -1363,12 +1576,14 @@ function switchTab(name){
   document.querySelectorAll('.bottom-nav-btn').forEach(btn=>btn.classList.toggle('active',btn.dataset.tab===name));
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   $('panel-'+name).classList.add('active');
-  $('deleteModeBtn').style.display=name==='history'?'inline-flex':'none';
+  if(name!=='history')$('deleteModeBtn').style.display='none';else $('deleteModeBtn').style.display='inline-flex';
   if(name==='history'){renderHistory();updateStorageInfo()}
-  if(name!=='history')$('pieArea').style.display='none';
+  if(name!=='history'){$('pieArea').style.display='none';$('chartArea').style.display='none'}
   if(name==='timeline')renderTimeline();
-  /* 切换 Tab 时自动关闭 AI 分析 sheet */
   if($('aiSheet').classList.contains('show'))closeAiSheet();
+  if(name==='assistant')setTimeout(()=>$('maInput')?.focus(),100);
+  /* 移动端助理 Tab 激活时隐藏 header */
+  document.querySelector('.app .header').classList.toggle('hide',name==='assistant');
 }
 
 /* 折线图绘制 */
@@ -1993,6 +2208,16 @@ async function init(){
 }
 window.addEventListener('online',trySyncPending);
 init();
+
+/* ===== 移动端助手 ===== */
+function maAutoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px'}
+function clearMobileAssistant(){$('maBody').innerHTML='';$('maBody').style.display='none';$('maWelcome').style.display=''}
+function maExample(t){$('maInput').value=t.replace(/^[📝📊📋💬]\s*/,'');maSend()}
+function maAddBubble(html,role){const welcome=$('maWelcome');const body=$('maBody');if(welcome&&welcome.style.display!=='none'){welcome.style.display='none';body.style.display='block'}const id=role==='typing'?' id="maTyping"':'';body.insertAdjacentHTML('beforeend','<div class="ma-msg-wrap '+(role==='user'?'user':'ai')+'">'+(role!=='user'?'<div class="ma-avatar">🤖</div>':'')+'<div class="ma-bubble '+(role==='typing'?'ai typing':role)+'"'+id+'>'+html+'</div></div>');body.scrollTop=body.scrollHeight}
+function maRemoveTyping(){const t=$('maTyping');if(t)t.closest('.ma-msg-wrap')?.remove()}
+async function maSend(){const input=$('maInput');const text=input.value.trim();if(!text)return;input.value='';maAutoResize(input);maAddBubble(escHtml(text),'user');maAddBubble('正在思考…','typing');const apiKey=readSens('apiKey');if(!apiKey){maRemoveTyping();maAddBubble('请先在设置中填写 API Key','ai');return};const c=cfg();const provider=c.apiProvider||'siliconflow';const apiModel=c.apiModel||DEFAULT_MODEL[provider];const endpoint=ENDPOINTS[provider];let recentRecords=[];try{recentRecords=(await loadRecords()).slice(0,10).map(r=>({date:r.date,subjects:r.subjects,hours:r.hours,memo:r.memo}))}catch{};const systemPrompt='你是学习日志助手。回复简洁精炼，一句话能说清绝不说两句。用户输入分两种情况：\n\n1. 操作指令 —— 识别意图并返回 JSON\n2. 闲聊/提问 —— 正常回复，简短口语化，不返回 JSON\n\n判断规则：只有明确要「添加/删除/查询/统计」学习内容时才返回 JSON。否则正常聊天。\n\nJSON 格式（仅在操作指令时）：\n{"intent":"add|delete|query|stats","suggestedActions":[{"title":"标题","desc":"简短描述","action":"add|delete|query|stats","data":{}}]}\n\n意图：\n- add：提取 subjects（数学/英语/政治/408/软考）、hours、memo\n- delete：提取日期\n- stats：提取范围（week/month/all）\n- query：提取日期\n\n今天：'+today()+'，昨天：'+dateStr(-1)+'，前天：'+dateStr(-2)+'\n最近记录：'+(recentRecords.length?JSON.stringify(recentRecords):'无')+'\n\n重要：闲聊直接回复文字，别用JSON。操作指令只返回JSON。';const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),15000);try{const resp=await fetch(endpoint,{signal:controller.signal,method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},body:JSON.stringify({model:apiModel,max_tokens:1200,temperature:0.1,...(apiModel.includes('Qwen3')?{chat_template_kwargs:{enable_thinking:false}}:{}),messages:[{role:'system',content:systemPrompt},{role:'user',content:text}]})});clearTimeout(timeout);const data=await resp.json();if(!resp.ok)throw new Error(data.error?.message||'HTTP '+resp.status);const content=(data.choices?.[0]?.message?.content||'').trim();if(!content)throw new Error('AI 未返回内容');let parsed;try{parsed=JSON.parse(content)}catch{const positions=[];for(let i=0;i<content.length;i++)if(content[i]==='{')positions.push(i);for(let p=positions.length-1;p>=0;p--){const sub=content.substring(positions[p]);const end=sub.lastIndexOf('}');if(end>0){try{parsed=JSON.parse(sub.substring(0,end+1));break}catch{}}}}maRemoveTyping();if(!parsed?.suggestedActions){maAddBubble(escHtml(content).replace(/\n/g,'<br>'),'ai')}else{const body=$('maBody');const cardsHtml=parsed.suggestedActions.map((a,i)=>'<div class="ma-action-card" onclick="maExecute('+i+')" data-action=\''+JSON.stringify(a).replace(/'/g,"&apos;")+'\'><div class="ma-action-title">'+escHtml(a.title)+'</div><div class="ma-action-desc">'+escHtml(a.desc)+'</div></div>').join('');body.insertAdjacentHTML('beforeend','<div class="ma-msg-wrap ai"><div class="ma-avatar">🤖</div><div style="flex:1;max-width:85%">'+cardsHtml+'</div></div>');body.scrollTop=body.scrollHeight}}catch(e){clearTimeout(timeout);maRemoveTyping();const msg=e.name==='AbortError'?'请求超时，请检查网络':e.message;maAddBubble('❌ '+escHtml(msg),'ai')}}
+async function maExecute(idx){const cards=document.querySelectorAll('.ma-action-card');const card=cards[idx];if(!card)return;const a=JSON.parse(card.dataset.action);document.querySelectorAll('.ma-action-card').forEach(c=>c.closest('.ma-msg-wrap')?.remove());if(a.action==='add'){maAddBubble('正在添加…','typing');const d=a.data;const record={date:today(),subjects:(d.subjects||[]).join('、'),hours:d.hours?String(d.hours):'',memo:d.memo||'',analysis:'',images:[]};const dest=await upsert(record);maRemoveTyping();maAddBubble('✅ 已'+(dest==='cloud'?'同步到云端':'保存到本地')+'：'+record.subjects+' '+(record.hours?record.hours+'小时':'')+' '+(record.memo||''),'ai');updateStorageInfo()}else if(a.action==='delete'){maAddBubble('正在删除…','typing');const records=await loadRecords();const target=records.find(r=>r.date===a.data.date);maRemoveTyping();if(!target){maAddBubble('未找到 '+a.data.date+' 的记录','ai');return}deleteLocalRecord(target.id);if(sb)cloudDeleteRecord(target.id).catch(()=>{});maAddBubble('🗑️ 已删除 '+a.data.date+' 的记录','ai');updateStorageInfo()}else if(a.action==='stats'){const records=await loadRecords();const now=new Date();const range=a.data.range||'week';let filtered=records;if(range==='week')filtered=records.filter(r=>new Date(r.date)>=new Date(now-7*864e5));else if(range==='month')filtered=records.filter(r=>new Date(r.date)>=new Date(now-30*864e5));const totalH=filtered.reduce((s,r)=>s+(parseFloat(r.hours)||0),0);const subs=[...new Set(filtered.flatMap(r=>(r.subjects||'').split(/[,，、]/).map(s=>s.trim()).filter(Boolean)))];const label={week:'本周',month:'本月',all:'全部'}[range]||range;maAddBubble('📊 '+label+'：记录 <b>'+filtered.length+'</b> 天，累计 <b>'+totalH.toFixed(1)+'</b> 小时<br>科目：'+(subs.join('、')||'无'),'ai')}else if(a.action==='query'){const records=await loadRecords();const r=records.find(rec=>rec.date===a.data.date);if(!r){maAddBubble(escHtml(a.data.date)+' 暂无记录','ai');return}maAddBubble(escHtml(r.date)+'<br>科目：'+escHtml(r.subjects||'无')+' | '+(r.hours||'?')+'小时<br>备注：'+escHtml(r.memo||'无'),'ai')}}
+if(window.visualViewport){window.visualViewport.addEventListener('resize',()=>{const panel=$('panel-assistant');if(!panel||!panel.classList.contains('active'))return;const keyboardHeight=window.innerHeight-window.visualViewport.height;const inputWrap=$('maInputWrap');if(inputWrap){inputWrap.style.paddingBottom=keyboardHeight>50?keyboardHeight+'px':'calc(10px + env(safe-area-inset-bottom))'}const body=$('maBody');if(body)setTimeout(()=>{body.scrollTop=body.scrollHeight},50)})}
 </script>
 
 <!-- AI 助手 -->

@@ -83,6 +83,17 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 .upload-icon svg{width:17px;height:17px;stroke:var(--text-2);fill:none;stroke-width:1.5}
 .upload-zone p{font-size:14px;color:var(--text-2);line-height:1.65}
 .upload-zone strong{color:var(--text);font-weight:500}
+.desktop-only { display: block; }
+.mobile-only  { display: none;  }
+
+@media(max-width:640px) {
+  .desktop-only { display: none !important; }
+  .mobile-only  { display: flex !important; }
+}
+.upload-actions{gap:10px;margin-bottom:1rem}
+.upload-action-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;padding:14px 8px;background:var(--bg-card);border:.5px solid var(--border);border-radius:var(--radius);cursor:pointer;font-family:inherit;font-size:12px;color:var(--text-2);transition:background .15s,border-color .15s}
+.upload-action-btn:active{background:var(--bg-muted);border-color:var(--border-2)}
+.upload-action-btn svg{width:22px;height:22px;stroke:var(--text-2)}
 .preview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin-top:1rem}
 .preview-item{aspect-ratio:1;border-radius:var(--radius-sm);overflow:hidden;border:.5px solid var(--border);position:relative}
 .preview-item img{width:100%;height:100%;object-fit:cover;display:block}
@@ -93,12 +104,82 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 .btn:hover{background:var(--bg-muted)}
 .btn-group{display:flex;gap:10px;margin-top:1.25rem}
 .btn-group .btn-primary{flex:1;margin-top:0}
-.result-card{background:var(--bg-card);border:.5px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-top:1.25rem}
-.result-meta{display:flex;justify-content:space-between;align-items:center;padding-bottom:1rem;margin-bottom:1.25rem;border-bottom:.5px solid var(--border);flex-wrap:wrap;gap:8px}
-.result-meta .meta-label{font-size:13px;color:var(--text-2)}
-.result-content{font-size:14px;line-height:1.85;color:var(--text)}
-.section-title{display:block;font-size:11px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--text-3);margin-top:1.25rem;margin-bottom:.35rem}
-.section-title:first-child{margin-top:0}
+.result-card {
+  margin-top: 1.5rem;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: .5px solid var(--border);
+  background: var(--bg-card);
+}
+.result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: .85rem 1.25rem;
+  border-bottom: .5px solid var(--border);
+  background: var(--bg-muted);
+}
+.result-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.result-ai-badge {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  background: var(--bg-card);
+  border: .5px solid var(--border);
+  padding: 3px 9px;
+  border-radius: 100px;
+}
+.result-model-label {
+  font-size: 12px;
+  color: var(--text-3);
+}
+.result-content {
+  padding: 1.25rem;
+  font-size: 14px;
+  line-height: 1.9;
+  color: var(--text);
+}
+.result-section {
+  margin-bottom: 1.25rem;
+}
+.result-section:last-child {
+  margin-bottom: 0;
+}
+.result-section-title {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: .55rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.result-section-title::after {
+  content: '';
+  flex: 1;
+  height: .5px;
+  background: var(--border);
+}
+.result-section-body {
+  font-size: 14px;
+  line-height: 1.85;
+  color: var(--text);
+  white-space: pre-wrap;
+}
+.result-footer {
+  padding: .85rem 1.25rem;
+  border-top: .5px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+}
 .spinner{width:15px;height:15px;border:2px solid rgba(255,255,255,.25);border-top-color:rgba(255,255,255,.9);border-radius:50%;animation:spin .65s linear infinite;flex-shrink:0}
 .spinner-sm{width:13px;height:13px;border:1.5px solid var(--border-2);border-top-color:var(--text-2);border-radius:50%;animation:spin .65s linear infinite;display:inline-block;vertical-align:middle}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -217,6 +298,10 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 .chart-legend{display:flex;justify-content:center;margin-top:.5rem}
 .legend-item{font-size:11px;color:var(--text-2);display:flex;align-items:center;gap:4px}
 .legend-dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.pie-legend-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-2)}
+.pie-legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.pie-legend-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pie-legend-val{color:var(--text-3);font-size:11px;white-space:nowrap}
   /* 时间线 - 气泡风格 */
   .timeline{position:relative;max-width:620px;margin:0 auto;padding:0 0 2rem}
   .timeline::before{content:'';position:absolute;left:calc(50% - .5px);top:0;bottom:0;width:1px;background:repeating-linear-gradient(to bottom,var(--border) 0,var(--border) 5px,transparent 5px,transparent 12px);opacity:.6}
@@ -276,45 +361,164 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
   .tl-item:nth-child(even) .tl-date{padding-left:12px}
   .lightbox-inner{width:92vw}
 }
-@media(max-width:480px){
-  .app{padding:1.5rem 1rem 6rem}
-  .header{flex-wrap:wrap;gap:8px;margin-bottom:1.5rem}
-  .logo{flex-direction:column;align-items:flex-start;gap:4px}
+/* ── AI Bottom Sheet ── */
+.ai-sheet-backdrop {
+  position: fixed; inset: 0; z-index: 70;
+  background: rgba(0,0,0,.35);
+  opacity: 0; pointer-events: none;
+  transition: opacity .3s;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+.ai-sheet-backdrop.show { opacity: 1; pointer-events: auto; }
+
+.ai-sheet {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 71;
+  background: var(--bg-card);
+  border-radius: 20px 20px 0 0;
+  border-top: .5px solid var(--border);
+  box-shadow: 0 -8px 40px rgba(0,0,0,.15);
+  max-height: 88vh;
+  display: flex; flex-direction: column;
+  transform: translateY(100%);
+  transition: transform .38s cubic-bezier(.32,1,.5,1);
+  will-change: transform;
+  touch-action: none;
+}
+.ai-sheet.show { transform: translateY(0); }
+
+.ai-sheet-handle-area {
+  padding: 12px 0 4px;
+  display: flex; justify-content: center;
+  cursor: grab; flex-shrink: 0;
+  user-select: none;
+}
+.ai-sheet-handle-area:active { cursor: grabbing; }
+.ai-sheet-handle {
+  width: 36px; height: 4px;
+  border-radius: 100px;
+  background: var(--border-2);
+}
+
+.ai-sheet-header {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 8px 1.25rem 12px;
+  border-bottom: .5px solid var(--border);
+  flex-shrink: 0;
+}
+.ai-sheet-header-left { display: flex; align-items: center; gap: 8px; }
+
+.ai-sheet-save-btn {
+  font-family: inherit; font-size: 14px; font-weight: 500;
+  padding: 7px 18px;
+  background: var(--accent); color: var(--bg);
+  border: none; border-radius: 100px;
+  cursor: pointer; transition: opacity .15s;
+}
+.ai-sheet-save-btn:hover { opacity: .82; }
+.ai-sheet-save-btn:disabled { opacity: .35; cursor: not-allowed; }
+
+.ai-sheet-body {
+  overflow-y: auto; flex: 1;
+  padding: 1.25rem 1.25rem 2.5rem;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+.ai-sheet-body::-webkit-scrollbar { display: none; }
+
+/* 桌面端 bottom sheet 变成居中 modal */
+@media(min-width:640px) {
+  .ai-sheet-backdrop { border-radius: 0; }
+  .ai-sheet {
+    left: 50%; right: auto;
+    transform: translateX(-50%) translateY(100%);
+    width: 100%; max-width: 680px;
+    border-radius: 20px 20px 0 0;
+  }
+  .ai-sheet.show {
+    transform: translateX(-50%) translateY(0);
+  }
+}
+/* ── 底部导航栏（移动端专属） ── */
+.bottom-nav{display:none}
+@media(max-width:640px){
+  .bottom-nav{
+    display:flex;
+    position:fixed;
+    bottom:0;left:0;right:0;
+    height:56px;
+    background:var(--bg-card);
+    border-top:.5px solid var(--border);
+    z-index:80;
+    padding-bottom:env(safe-area-inset-bottom);
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+  }
+  .bottom-nav-btn{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+    background:none;border:none;cursor:pointer;color:var(--text-3);font-family:inherit;font-size:10px;
+    font-weight:400;padding:6px 0;transition:color .15s;-webkit-tap-highlight-color:transparent;position:relative
+  }
+  .bottom-nav-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;transition:stroke .15s}
+  .bottom-nav-btn.active{color:var(--text);font-weight:500}
+  .bottom-nav-btn.active svg{stroke-width:2}
+  .bottom-nav-btn.active::after{content:'';position:absolute;bottom:4px;width:4px;height:4px;border-radius:50%;background:var(--text)}
+
+  .tabs{display:none}
+  .app{padding:1.25rem 1rem 72px}
+  .header{margin-bottom:1.25rem}
   .logo h1{font-size:20px}
+  .sync-indicators{display:none}
+  .date-label{font-size:12px;padding:3px 10px}
+
   .field-grid{grid-template-columns:1fr}
-  .stats-row{grid-template-columns:1fr 1fr}
+  .field input,.field textarea,.field select{font-size:16px;padding:11px 13px}
+  .field textarea{min-height:88px}
+  .chip{font-size:13px;padding:7px 15px}
+
+  .btn-group{flex-direction:column;gap:8px}
+  .btn-primary{padding:15px;font-size:15px;border-radius:14px}
+  .btn{padding:10px 16px;font-size:13px}
+
+  .stats-row{grid-template-columns:1fr 1fr;gap:8px}
   .stats-row .stat-box:last-child{grid-column:1/-1}
-  .btn-group{flex-direction:column}
-  .tab{padding:6px 14px;font-size:12px}
-  /* 时间线移动端 */
+  .stat-box{padding:12px 14px}
+  .stat-box .s-value{font-size:20px}
+
+  .history-top{gap:8px}
+  .export-btn{font-size:12px;padding:5px 10px}
+  .hdr-right select{font-size:12px;padding:5px 8px}
+  .record-item{padding:.9rem 1rem}
+  .record-date{font-size:13px}
+  .record-excerpt{font-size:12px}
+  .chart-container{padding:.85rem}
+
   .timeline{max-width:100%;padding:0}
   .timeline::before{display:none}
   .tl-dot-col{display:none}
-  .tl-item{flex-direction:column;align-items:stretch;margin-bottom:1.25rem}
-  .tl-date{width:100%!important;text-align:left!important;padding:0 0 6px!important;font-size:13px;order:0!important}
-  .tl-bubble{width:100%;max-width:none!important;order:1!important}
-  .tl-item:nth-child(even) .tl-date{text-align:left!important;padding:0 0 6px!important;order:0!important}
+  .tl-item{flex-direction:column;align-items:stretch;margin-bottom:1rem}
+  .tl-date{width:100%!important;text-align:left!important;padding:0 0 5px!important;font-size:12px;color:var(--text-3);order:0!important}
+  .tl-bubble{width:100%;max-width:none!important;order:1!important;border-radius:12px}
+  .tl-item:nth-child(even) .tl-date{text-align:left!important;padding:0 0 5px!important;order:0!important}
   .tl-item:nth-child(even) .tl-bubble{order:1!important}
   .tl-item:nth-child(even) .tl-dot-col{display:none}
   .tl-subs{font-size:12px}
   .tl-desc{font-size:12px;-webkit-line-clamp:3}
   .tl-info{padding:8px 10px}
-  .tl-filter{gap:6px;margin-bottom:1.25rem}
-  .tl-filter-btn{font-size:11px;padding:4px 10px}
-  /* 弹窗移动端 */
+  .tl-filter{gap:6px;margin-bottom:1rem;justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px}
+  .tl-filter::-webkit-scrollbar{display:none}
+  .tl-filter-btn{font-size:11px;padding:5px 12px;flex-shrink:0}
+
   .lightbox-inner{flex-direction:column;width:96vw;max-height:92vh}
   .lightbox-left{padding:.75rem}
-  .lightbox-right{width:100%;border-left:none;border-top:1px solid rgba(255,255,255,.05);padding:1.25rem 1.5rem 1.75rem;max-height:38vh}
-  /* 记录列表移动端 */
-  .record-item{padding:.9rem 1rem}
-  .record-date{font-size:13px}
-  .record-excerpt{font-size:12px}
-  /* 设置面板移动端 */
-  .settings-section{padding:1rem}
-  /* AI助手移动端 */
-  .assistant-panel{width:min(340px,calc(100vw - 1.5rem));right:.75rem;bottom:5rem;max-height:50vh}
-  .assistant-fab{bottom:1rem;right:.75rem;width:40px;height:40px}
-  .assistant-hint{right:3.5rem;bottom:1.5rem;font-size:11px;padding:6px 10px}
+  .lightbox-right{width:100%;border-left:none;border-top:1px solid rgba(255,255,255,.05);padding:1rem 1.25rem 1.5rem;max-height:35vh}
+  .toast{bottom:70px}
+  .assistant-fab{bottom:68px;right:1rem;width:42px;height:42px}
+  .assistant-panel{width:calc(100vw - 1.5rem);right:.75rem;bottom:112px;max-height:52vh}
+  .assistant-hint{right:3.75rem;bottom:72px;max-width:calc(100vw - 5rem);white-space:normal}
+  .lock-bar{align-items:flex-start}
+  .modal{padding:1.25rem;border-radius:16px 16px 0 0;max-height:90vh}
 }
 </style>
 </head>
@@ -350,12 +554,26 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
       <span id="chartMonth" class="chart-month"></span>
     </div>
     <div class="chart-wrap">
-      <canvas id="lineChart" height="120"></canvas>
+      <canvas id="lineChart" class="no-transition" height="120"></canvas>
     </div>
     <div class="chart-legend">
       <span class="legend-item"><span class="legend-dot"></span>学习时长(小时)</span>
     </div>
   </div>
+
+<!-- 科目占比饼图 -->
+<div id="pieArea" class="chart-container" style="display:none;">
+  <div class="chart-header">
+    <span class="chart-title">科目时长占比</span>
+    <span id="pieLabel" class="chart-month"></span>
+  </div>
+  <div style="display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;">
+    <div class="chart-wrap" style="flex-shrink:0;width:140px;height:140px;">
+      <canvas id="pieChart" class="no-transition" width="140" height="140"></canvas>
+    </div>
+    <div id="pieLegend" style="flex:1;min-width:0;display:flex;flex-direction:column;gap:7px;"></div>
+  </div>
+</div>
 
   <div class="tabs">
     <button class="tab active" onclick="switchTab('record')">今日记录</button>
@@ -363,6 +581,26 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     <button class="tab" onclick="switchTab('timeline')">时间线</button>
     <button class="tab" onclick="switchTab('settings')">设置</button>
   </div>
+
+<!-- 底部导航栏（移动端） -->
+<nav class="bottom-nav" id="bottomNav">
+  <button class="bottom-nav-btn active" onclick="switchTab('record')" data-tab="record">
+    <svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+    记录
+  </button>
+  <button class="bottom-nav-btn" onclick="switchTab('history')" data-tab="history">
+    <svg viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    历史
+  </button>
+  <button class="bottom-nav-btn" onclick="switchTab('timeline')" data-tab="timeline">
+    <svg viewBox="0 0 24 24"><path d="M4 6h16M4 10h16M4 14h8"/></svg>
+    时间线
+  </button>
+  <button class="bottom-nav-btn" onclick="switchTab('settings')" data-tab="settings">
+    <svg viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+    设置
+  </button>
+</nav>
 
   <!-- 今日记录 -->
   <div id="panel-record" class="panel active">
@@ -398,12 +636,34 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
       </div>
     </div>
 
-    <div class="upload-zone" id="uploadZone">
-      <input type="file" id="fileInput" accept="image/*" multiple onchange="handleFiles(this.files)"/>
-      <div class="upload-icon"><svg viewBox="0 0 24 24"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg></div>
-      <p><strong>点击或拖拽上传今日学习照片</strong><br>笔记、错题、时间轴截图均可，支持多张</p>
-    </div>
-    <div class="preview-grid" id="previewGrid"></div>
+<!-- 桌面端拖拽上传 -->
+<div class="upload-zone desktop-only" id="uploadZone">
+  <input type="file" id="fileInputDesktop" accept="image/*" multiple onchange="handleFiles(this.files)"/>
+  <div class="upload-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg></div>
+  <p><strong>点击或拖拽上传今日学习照片</strong><br>笔记、错题、时间轴截图均可，支持多张</p>
+</div>
+<!-- 移动端自定义上传入口 -->
+<div class="upload-actions mobile-only">
+  <button class="upload-action-btn" onclick="$('inputCamera').click()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/><path d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z"/></svg>
+    拍照
+  </button>
+  <button class="upload-action-btn" onclick="$('inputAlbum').click()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 18h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v10.5a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V10.5zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
+    相册
+  </button>
+  <button class="upload-action-btn" onclick="$('inputFile').click()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+    文件夹
+  </button>
+</div>
+
+<!-- 三个隐藏 input -->
+<input id="inputCamera" type="file" accept="image/*" capture="environment" style="display:none" onchange="handleFiles(this.files)"/>
+<input id="inputAlbum"  type="file" accept="image/*" multiple style="display:none" onchange="handleFiles(this.files)"/>
+<input id="inputFile"   type="file" accept="image/*,application/pdf" multiple style="display:none" onchange="handleFiles(this.files)"/>
+
+<div class="preview-grid" id="previewGrid"></div>
 
     <div class="btn-group">
       <button class="btn-primary" id="saveRecordBtn" onclick="saveSimpleRecord()" disabled>直接保存</button>
@@ -514,14 +774,25 @@ CREATE POLICY "公开读写" ON app_settings FOR ALL USING (true);</pre>
 
     <div class="card">
       <div class="card-title">数据管理</div>
-      <div id="storageWarning" style="display:none;margin-bottom:12px;padding:10px 14px;background:rgba(229,57,53,.08);border:1px solid rgba(229,57,53,.2);border-radius:var(--radius-sm);font-size:12px;line-height:1.6;color:var(--red);">
-        ⚠️ 本地存储空间不足（<span id="storageUsedText"></span>），建议删除旧图片记录或导出备份后清空缓存。
+      <div id="storageInfo" style="margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-3);margin-bottom:4px;">
+          <span>本地存储（仅缓存，数据保存在云端）</span>
+          <span><span id="storageUsedBar"></span></span>
+        </div>
+        <div style="height:3px;background:var(--bg-muted);border-radius:2px;overflow:hidden;margin-bottom:10px;">
+          <div id="storageBar" style="height:100%;border-radius:2px;background:var(--text-3);transition:width .4s;width:0%"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-3);margin-bottom:4px;">
+          <span>云端存储（Supabase）</span>
+          <span><span id="cloudStorageBar">查询中…</span></span>
+        </div>
+        <div style="height:4px;background:var(--bg-muted);border-radius:2px;overflow:hidden;">
+          <div id="cloudStorageBarProgress" style="height:100%;border-radius:2px;background:var(--green);transition:width .6s;width:0%"></div>
+        </div>
       </div>
-      <div id="storageInfo" style="font-size:11px;color:var(--text-3);margin-bottom:10px;">存储用量：<span id="storageUsedBar"></span></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
         <button class="btn" onclick="exportSettingsJson()">导出设置备份</button>
         <label class="btn" style="cursor:pointer">导入设置<input type="file" accept=".json" style="display:none" onchange="importSettings(event)"/></label>
-        <button class="btn" style="color:var(--red)" onclick="if(confirm('确认清空本地缓存？'))clearLocal()">清空本地缓存</button>
       </div>
       <span class="hint-text">导出的设置文件可在新设备导入快速配置，密钥经过混淆处理，请妥善保管</span>
     </div>
@@ -575,6 +846,14 @@ CREATE POLICY "公开读写" ON app_settings FOR ALL USING (true);</pre>
 </div>
 
 <script>
+/* ── IndexedDB 离线队列 ── */
+const IDB_NAME='studylog_idb';
+const IDB_STORE='pending_records';
+function openIDB(){return new Promise((resolve,reject)=>{const req=indexedDB.open(IDB_NAME,1);req.onupgradeneeded=e=>{e.target.result.createObjectStore(IDB_STORE,{keyPath:'id'})};req.onsuccess=e=>resolve(e.target.result);req.onerror=()=>reject(req.error)})}
+async function idbSave(record){const db=await openIDB();return new Promise((resolve,reject)=>{const tx=db.transaction(IDB_STORE,'readwrite');tx.objectStore(IDB_STORE).put({...record,_pendingSync:true});tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)})}
+async function idbDelete(id){const db=await openIDB();return new Promise((resolve,reject)=>{const tx=db.transaction(IDB_STORE,'readwrite');tx.objectStore(IDB_STORE).delete(id);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)})}
+async function idbGetAll(){const db=await openIDB();return new Promise((resolve,reject)=>{const req=db.transaction(IDB_STORE,'readonly').objectStore(IDB_STORE).getAll();req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)})}
+
 const CACHE_KEY='study_logs_v4';
 const CFG_KEY='study_cfg_v2';
 const DEFAULT_SB_URL='https://epxuylxivkdfxxiucxgg.supabase.co';
@@ -767,15 +1046,50 @@ async function restoreSettingsFromCloud(){
   return restored;
 }
 async function upsert(record){
-  cacheRecord(record);if(!sb)return'local';
-  try{
-    const exist=record.id?await sbReq(`study_logs?id=eq.${record.id}&select=id`):await sbReq(`study_logs?date=eq.${record.date}&select=id`);
-    const payload={date:record.date,subjects:record.subjects,hours:record.hours?parseFloat(record.hours):null,memo:record.memo,analysis:record.analysis,images:record.images||[],updated_at:new Date().toISOString()};
-    if(record.id&&exist&&exist.length>0)await sbReq(`id=eq.${record.id}`,{method:'PATCH',body:JSON.stringify(payload)});
-    else if(!record.id)await sbReq('study_logs',{method:'POST',prefer:'resolution=merge-duplicates',body:JSON.stringify({...payload,id:record.id||genId()})});
-    else await sbReq('study_logs',{method:'POST',prefer:'resolution=merge-duplicates',body:JSON.stringify({...payload,id:record.id})});
-    return'cloud';
-  }catch(e){toast('云端保存失败：'+e.message);return'local'}
+  if(!record.id)record.id=genId();
+  cacheRecord(record);
+  await idbSave(record);
+  if(sb){
+    try{
+      await uploadToCloud(record);
+      await idbDelete(record.id);
+      return'cloud';
+    }catch(e){
+      scheduleSync();
+      return'local';
+    }
+  }
+  scheduleSync();
+  return'local';
+}
+async function uploadToCloud(record){
+  const payload={date:record.date,subjects:record.subjects,hours:record.hours?parseFloat(record.hours):null,memo:record.memo,analysis:record.analysis,images:record.images||[],updated_at:new Date().toISOString()};
+  const exist=await sbReq(`study_logs?id=eq.${record.id}&select=id`);
+  if(exist&&exist.length>0){
+    await sbReq(`study_logs?id=eq.${record.id}`,{method:'PATCH',body:JSON.stringify(payload)});
+  }else{
+    await sbReq('study_logs',{method:'POST',prefer:'resolution=merge-duplicates',body:JSON.stringify({...payload,id:record.id})});
+  }
+}
+/* ── 后台同步调度 ── */
+let _syncTimer=null;
+function scheduleSync(){
+  if(_syncTimer)return;
+  _syncTimer=setInterval(trySyncPending,15000);
+}
+async function trySyncPending(){
+  if(!sb)return;
+  const pending=await idbGetAll();
+  if(!pending.length){clearInterval(_syncTimer);_syncTimer=null;return}
+  let anyFailed=false;
+  for(const rec of pending){
+    try{
+      await uploadToCloud(rec);
+      await idbDelete(rec.id);
+      toast(`📤 已补传：${rec.date}`);
+    }catch{anyFailed=true}
+  }
+  if(!anyFailed){clearInterval(_syncTimer);_syncTimer=null}
 }
 async function cloudDeleteRecord(id){
   if(!sb)return false;
@@ -788,24 +1102,31 @@ async function loadRecords(){
   if(!sb)return localRecords();
   try{
     const data=await sbReq('study_logs?select=*&order=date.desc');
-    if(data){localStorage.setItem(CACHE_KEY,JSON.stringify(data.map(r=>({id:r.id,date:r.date,subjects:r.subjects,hours:r.hours,memo:r.memo,analysis:r.analysis,images:r.images||[]}))));return data}
+    if(data){
+      const json=JSON.stringify(data.map(r=>({id:r.id,date:r.date,subjects:r.subjects,hours:r.hours,memo:r.memo,analysis:r.analysis,images:r.images||[]})));
+      /* 只有本地空间充足时才缓存，否则直接返回云端数据，避免删了又写满 */
+      const used=getStorageSize()-localStorage.getItem(CACHE_KEY).length*2;
+      if(used+json.length*2<4.8*1024*1024){
+        localStorage.setItem(CACHE_KEY,json);
+      }
+      return data;
+    }
   }catch{toast('云端读取失败，显示本地缓存')}
   return localRecords();
 }
 
 function today(){return new Date().toLocaleDateString('zh-CN',{year:'numeric',month:'2-digit',day:'2-digit'}).replace(/\//g,'-')}
 
-/* 拖拽上传 */
+/* 拖拽上传（桌面端，移动端用按钮） */
 function setupDrag(){
+  if(window.matchMedia('(max-width:640px)').matches)return;
   const z=$('uploadZone');
+  if(!z)return;
   z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('dragover')});
   z.addEventListener('dragleave',()=>z.classList.remove('dragover'));
   z.addEventListener('drop',e=>{e.preventDefault();z.classList.remove('dragover');handleFiles(e.dataTransfer.files)});
 }
 function handleFiles(files){
-  /* 上传前检查存储空间 */
-  const used=getStorageSize();
-  if(used>4.5*1024*1024){toast('⚠️ 本地存储空间不足，请先清理旧记录');return}
   Array.from(files).forEach(f=>{
     if(!f.type.startsWith('image/'))return;
     compressImage(f).then(data=>{
@@ -880,14 +1201,12 @@ async function analyze(){
   const btn=$('analyzeBtn');btn.disabled=true;btn.innerHTML='<span class="spinner"></span>分析中…';
 
   const useVision=images.length>0;
-  const prompt=`你是一位简洁高效的考研学习助手。${useVision?'我已经上传了'+images.length+'张学习相关的图片（笔记、错题、课本等），请务必仔细识别图片中的所有文字、公式、题目内容，这是分析的核心依据。':''}请根据以下信息进行分析，语言精练，不要说废话、套话和空泛的鼓励。
-
-今日学习信息：
-- 日期：${today()}
-- 学习科目：${subjects||'未填写'}
-- 学习时长：${hours?hours+'小时':'未填写'}
-- 今日备注：${memo||'无'}
-${images.length>0?`- 上传图片：${images.length}张`:''}
+  const prompt=`你是一位简洁高效的学习助手。${useVision?'对方上传了'+images.length+'张学习图片（笔记、错题、课本等），务必识别图片中的文字和题目。':''}根据以下信息输出学习总结，精炼，每点尽量一句话，不要写套话和鼓励语。
+今日学习：
+- 科目：${subjects||'未填写'}
+- 时长：${hours?hours+'小时':'未填写'}
+- 备注：${memo||'无'}
+${images.length>0?`- 图片：${images.length}张`:''}
 
 请严格按以下格式输出，用【标题】标记各部分，直接内容，不使用Markdown符号：
 
@@ -908,15 +1227,13 @@ ${useVision?'根据图片中的实际内容，指出笔记中的薄弱环节、�
     const resp=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},body:JSON.stringify({model:apiModel,max_tokens:2400,temperature:0.3,stream:true,messages:[{role:'user',content}]})});
     if(!resp.ok){const data=await resp.json().catch(()=>({}));throw new Error(data.error?.message||'请求失败')}
 
-    /* 流式输出 */
-    $('resultArea').innerHTML=`
-    <div class="result-card">
-      <div class="result-meta">
-        <span class="meta-label">${provider==='siliconflow'?'硅基流动':'DeepSeek'} / ${apiModel} · ${today()}</span>
-        <button class="btn" id="saveAnalysisBtn" onclick="saveAnalysisRecord()" disabled>保存分析结果</button>
-      </div>
-      <div class="result-content" id="streamContent"></div>
-    </div>`;
+    /* 流式输出到 sheet */
+    $('aiSheetModel').textContent = `${provider==='siliconflow'?'硅基流动':'DeepSeek'} · ${apiModel}`;
+    $('aiSheetBody').innerHTML = '<div id="streamContent"></div>';
+    const sheetSaveBtn=$('aiSheetSaveBtn');
+    sheetSaveBtn.disabled = true;
+    sheetSaveBtn.textContent = '分析中…';
+    openAiSheet();
     const contentEl=$('streamContent');
     let fullText='';
     const reader=resp.body.getReader();
@@ -935,10 +1252,9 @@ ${useVision?'根据图片中的实际内容，指出笔记中的薄弱环节、�
         if(payload==='[DONE]')continue;
         try{
           const j=JSON.parse(payload);
-          /* 兼容 Qwen3 系列的 reasoning_content */
           const delta=j.choices?.[0]?.delta?.content||j.choices?.[0]?.delta?.reasoning_content||'';
           fullText+=delta;
-          const html=fullText.replace(/【(.+?)】/g,'<span class="section-title">$1</span>').replace(/\n/g,'<br>');
+          const html=fullText.replace(/【(.+?)】/g,'<b style="display:block;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-top:1.25rem;margin-bottom:.35rem">$1</b>').replace(/\n/g,'<br>');
           contentEl.innerHTML=html;
         }catch{}
       }
@@ -946,44 +1262,113 @@ ${useVision?'根据图片中的实际内容，指出笔记中的薄弱环节、�
     if(!fullText)throw new Error('AI 未返回有效内容（模型：'+apiModel+'）');
     pending={date:today(),subjects,hours,memo,analysis:fullText,images:images.map(i=>i.data)};
     if(typeof renderMathInElement==='function')renderMathInElement(contentEl,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],ignoreClass:'no-katex'});
-    const saveBtn=$('saveAnalysisBtn');if(saveBtn){saveBtn.disabled=false;saveBtn.textContent='保存分析结果'}
+    sheetSaveBtn.disabled=false;sheetSaveBtn.textContent='保存';
   }catch(e){toast('分析失败：'+e.message)}
   finally{btn.disabled=false;btn.innerHTML='AI 分析'}
 }
 
-function renderResult(text,provider,model){
-  const lbl=provider==='siliconflow'?'硅基流动':'DeepSeek';
-  const html=text.replace(/【(.+?)】/g,'<span class="section-title">$1</span>').replace(/\n/g,'<br>');
-  $('resultArea').innerHTML=`
-    <div class="result-card">
-      <div class="result-meta">
-        <span class="meta-label">分析完成 · ${today()} · ${lbl} / ${model}</span>
-        <button class="btn" id="saveAnalysisBtn" onclick="saveAnalysisRecord()">保存分析结果</button>
-      </div>
-      <div class="result-content">${html}</div>
-    </div>`;
-  if(typeof renderMathInElement==='function')renderMathInElement($('resultArea'),{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],ignoreClass:'no-katex'});
+/* ── AI Bottom Sheet 控制 ── */
+function openAiSheet() {
+  document.body.style.overflow = 'hidden';
+  $('aiSheetBackdrop').classList.add('show');
+  requestAnimationFrame(() => { $('aiSheet').classList.add('show'); });
+}
+function closeAiSheet() {
+  $('aiSheet').classList.remove('show');
+  $('aiSheetBackdrop').classList.remove('show');
+  setTimeout(() => { document.body.style.overflow = ''; }, 380);
+}
+(function setupSheetDrag() {
+  let startY=0,currentY=0,isDragging=false;
+  function trY(v){return window.matchMedia('(min-width:640px)').matches?'translateX(-50%) translateY('+v+'px)':'translateY('+v+'px)'}
+  function onStart(e){
+    if(!$('aiSheet').classList.contains('show'))return;
+    isDragging=true;startY=e.touches?e.touches[0].clientY:e.clientY;
+    $('aiSheet').style.transition='none';
+  }
+  function onMove(e){
+    if(!isDragging)return;
+    currentY=(e.touches?e.touches[0].clientY:e.clientY)-startY;
+    if(currentY<0)currentY=0;
+    $('aiSheet').style.transform=trY(currentY);
+    if(e.cancelable)e.preventDefault();
+  }
+  function onEnd(){
+    if(!isDragging)return;
+    isDragging=false;$('aiSheet').style.transition='';
+    if(currentY>120)closeAiSheet();
+    else $('aiSheet').style.transform=trY(0);
+    currentY=0;
+  }
+  document.addEventListener('DOMContentLoaded',()=>{
+    const area=$('aiSheetHandleArea');
+    area.addEventListener('touchstart',onStart,{passive:true});
+    area.addEventListener('touchmove',onMove,{passive:false});
+    area.addEventListener('touchend',onEnd);
+    area.addEventListener('mousedown',onStart);
+    window.addEventListener('mousemove',onMove);
+    window.addEventListener('mouseup',onEnd);
+  });
+})();
+
+function renderResult(text, provider, model) {
+  const lbl = provider === 'siliconflow' ? '硅基流动' : 'DeepSeek';
+  const sections = [];
+  const parts = text.split(/(【.+?】)/);
+  let current = null;
+  parts.forEach(part => {
+    const m = part.match(/^【(.+?)】$/);
+    if (m) { if (current) sections.push(current); current = { title: m[1], body: '' }; }
+    else if (current) current.body += part;
+  });
+  if (current) sections.push(current);
+  const sectionsHtml = sections.length
+    ? sections.map(s => `
+        <div class="result-section">
+          <div class="result-section-title">${s.title}</div>
+          <div class="result-section-body">${s.body.trim()}</div>
+        </div>`).join('')
+    : `<div class="result-section-body">${text.replace(/\n/g, '<br>')}</div>`;
+  $('aiSheetModel').textContent = `${lbl} · ${model}`;
+  $('aiSheetBody').innerHTML = sectionsHtml;
+  $('aiSheetSaveBtn').disabled = false;
+  $('aiSheetSaveBtn').textContent = '保存';
+  if (typeof renderMathInElement === 'function')
+    renderMathInElement($('aiSheetBody'), {
+      delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }],
+      ignoreClass: 'no-katex'
+    });
+  openAiSheet();
 }
 
-async function saveAnalysisRecord(){
-  if(!pending)return;
-  const btn=$('saveAnalysisBtn');btn.disabled=true;btn.innerHTML='<span class="spinner-sm"></span> 保存中…';
-  try{
-    const dest=await upsert(pending);
-    toast(dest==='cloud'?'已同步到云端':'已保存到本地');
-    btn.textContent=dest==='cloud'?'已同步云端 ✓':'已保存本地 ✓';
-    resetForm();pending=null;updateStorageInfo();
-  }catch(e){toast('保存失败：'+e.message);btn.disabled=false;btn.textContent='保存分析结果'}
+async function saveAnalysisRecord() {
+  if (!pending) return;
+  const btn = $('aiSheetSaveBtn');
+  btn.disabled = true; btn.textContent = '保存中…';
+  try {
+    const dest = await upsert(pending);
+    toast(dest === 'cloud' ? '已同步到云端' : '已保存到本地');
+    btn.textContent = '已保存 ✓';
+    resetForm(); pending = null;
+    setTimeout(closeAiSheet, 600);
+  } catch (e) {
+    toast('保存失败：' + e.message);
+    btn.disabled = false; btn.textContent = '保存';
+  }
 }
 
 /* 切换 Tab */
 function switchTab(name){
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['record','history','timeline','settings'][i]===name));
+  document.querySelectorAll('.bottom-nav-btn').forEach(btn=>btn.classList.toggle('active',btn.dataset.tab===name));
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   $('panel-'+name).classList.add('active');
   $('deleteModeBtn').style.display=name==='history'?'inline-flex':'none';
   if(name==='history'){renderHistory();updateStorageInfo()}
+  if(name!=='history')$('pieArea').style.display='none';
   if(name==='timeline')renderTimeline();
+  /* 切换 Tab 时自动关闭 AI 分析 sheet */
+  if($('aiSheet').classList.contains('show'))closeAiSheet();
 }
 
 /* 折线图绘制 */
@@ -1070,6 +1455,65 @@ function drawLineChart(records){
   }
 }
 
+function drawPieChart(records, filterLabel) {
+  const pieArea = $('pieArea');
+  if (!records || records.length === 0) { pieArea.style.display = 'none'; return; }
+
+  const subMap = {};
+  records.forEach(r => {
+    const h = parseFloat(r.hours) || 0;
+    if (!h) return;
+    (r.subjects || '未分类').split(/[,，、]/).map(s => s.trim()).filter(Boolean).forEach(s => {
+      subMap[s] = (subMap[s] || 0) + h;
+    });
+  });
+  const entries = Object.entries(subMap).sort((a, b) => b[1] - a[1]);
+  if (!entries.length) { pieArea.style.display = 'none'; return; }
+
+  pieArea.style.display = 'block';
+  $('pieLabel').textContent = filterLabel;
+
+  const COLORS = ['#6C8EBF','#82B366','#D6A56A','#AE81B8','#E07070','#5BA3A0','#C4A35A'];
+  const total = entries.reduce((s, [, v]) => s + v, 0);
+
+  const canvas = $('pieChart');
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = 140 * dpr; canvas.height = 140 * dpr;
+  canvas.style.width = '140px'; canvas.style.height = '140px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  const cx = 70, cy = 70, r = 58, innerR = 34;
+  let startAngle = -Math.PI / 2;
+  entries.forEach(([, val], i) => {
+    const sweep = (val / total) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, startAngle, startAngle + sweep);
+    ctx.closePath();
+    ctx.fillStyle = COLORS[i % COLORS.length];
+    ctx.fill();
+    startAngle += sweep;
+  });
+  ctx.beginPath();
+  ctx.arc(cx, cy, innerR, 0, Math.PI * 2);
+  ctx.fillStyle = getComputedColor('--bg-card');
+  ctx.fill();
+  ctx.fillStyle = getComputedColor('--text');
+  ctx.font = 'bold 13px DM Sans';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(total.toFixed(1) + 'h', cx, cy);
+
+  $('pieLegend').innerHTML = entries.map(([name, val], i) => {
+    const pct = ((val / total) * 100).toFixed(1);
+    return `<div class="pie-legend-item">
+      <span class="pie-legend-dot" style="background:${COLORS[i % COLORS.length]}"></span>
+      <span class="pie-legend-name">${name}</span>
+      <span class="pie-legend-val">${val.toFixed(1)}h · ${pct}%</span>
+    </div>`;
+  }).join('');
+}
+
 /* 历史回顾 */
 async function renderHistory(){
   const list=$('recordList');
@@ -1077,6 +1521,8 @@ async function renderHistory(){
   const filter=$('filterSel').value;
   let records=await loadRecords();
   drawLineChart(records);
+  const _filterLabel = {'all':'全部','week':'近一周','month':'近一月'}[$('filterSel').value] || '全部';
+  drawPieChart(records, _filterLabel);
   const now=new Date();
   if(filter==='week')records=records.filter(r=>new Date(r.date)>=new Date(now-7*864e5));
   if(filter==='month')records=records.filter(r=>new Date(r.date)>=new Date(now-30*864e5));
@@ -1152,11 +1598,10 @@ async function executeDelete(){
   btn.disabled=true;btn.textContent='删除中…';
   const r=_records[pendingDeleteIndex];
   const localOk=deleteLocalRecord(r.id);
-  let cloudOk=true;
-  if(sb)cloudOk=await cloudDeleteRecord(r.id);
+  if(r.id)idbDelete(r.id).catch(()=>{}); /* 同时移除离线队列 */
   closeConfirmOverlay();
-    if(cloudOk||localOk){
-    toast('删除成功');
+    if(localOk){
+    toast('已从本地删除');
     deleteMode=false;
     $('deleteModeBtn').textContent='删除模式';
     updateStorageInfo();
@@ -1459,7 +1904,16 @@ function importSettings(e){
   };
   rd.readAsText(f);
 }
-function clearLocal(){localStorage.removeItem(CACHE_KEY);toast('本地缓存已清空');updateStorageInfo()}
+function clearLocal(){
+  const records=localRecords();
+  if(!records.length){toast('没有需要清理的数据');return}
+  const msg=`当前共有 ${records.length} 条学习记录和 ${records.reduce((s,r)=>s+(r.images||[]).length,0)} 张图片。\n\n⚠️ 此操作不可撤销，数据将永久删除！`;
+  if(!confirm(msg))return;
+  localStorage.removeItem(CACHE_KEY);
+  toast('所有本地记录已清空');
+  updateStorageInfo();
+  renderHistory();
+}
 function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
 
 /* localStorage 存储用量检测 */
@@ -1479,9 +1933,32 @@ function updateStorageInfo(){
   const warn=$('storageWarning');
   const bar=$('storageUsedBar');
   const text=$('storageUsedText');
-  if(bar)bar.textContent=`${formatSize(size)} / 5 MB（${pct.toFixed(1)}%）`;
+  const progressBar=$('storageBar');
+  if(bar)bar.textContent=`${formatSize(size)} / 5 MB`;
   if(text)text.textContent=formatSize(size);
-  if(warn)warn.style.display=size>4*1024*1024?'block':'none';
+  if(warn)warn.style.display=size>4.8*1024*1024?'block':'none';
+  if(progressBar){
+    progressBar.style.width=pct.toFixed(1)+'%';
+    progressBar.style.background=pct>90?'var(--red)':pct>70?'var(--accent)':'var(--green)';
+  }
+  /* 云端用量估算 */
+  const cloudBar=$('cloudStorageBar');
+  const cloudProgress=$('cloudStorageBarProgress');
+  if(cloudBar){
+    if(!sb){cloudBar.textContent='未配置云端';if(cloudProgress)cloudProgress.style.width='0%';return}
+    cloudBar.textContent='查询中…';
+    sbReq('study_logs?select=id,images,memo,subjects,analysis').then(rows=>{
+      if(!rows||!rows.length){cloudBar.textContent='0 B / 1 GB';if(cloudProgress)cloudProgress.style.width='0%';return}
+      let cloudSize=0;
+      rows.forEach(r=>{cloudSize+=JSON.stringify(r).length*2});
+      const cloudPct=Math.min((cloudSize/(1024*1024*1024))*100,100);
+      cloudBar.textContent=`${formatSize(cloudSize)} / 1 GB · ${rows.length} 条记录`;
+      if(cloudProgress){
+        cloudProgress.style.width=cloudPct.toFixed(2)+'%';
+        cloudProgress.style.background='var(--green)';
+      }
+    }).catch(()=>{cloudBar.textContent='查询失败'});
+  }
 }
 
 /* 初始化 */
@@ -1512,7 +1989,9 @@ async function init(){
   const allRecords=await loadRecords();
   drawLineChart(allRecords);
   updateStorageInfo();
+  trySyncPending(); /* 页面加载时尝试补传离线队列 */
 }
+window.addEventListener('online',trySyncPending);
 init();
 </script>
 
@@ -1619,6 +2098,12 @@ function toggleAssistant(){
   }
 }
 $('assistantFab').addEventListener('click',toggleAssistant);
+$('assistantInput').addEventListener('focus',()=>{
+  if(window.innerWidth<=640){setTimeout(()=>{$('assistantPanel').style.bottom='0';$('assistantPanel').style.maxHeight='60vh'},300)}
+});
+$('assistantInput').addEventListener('blur',()=>{
+  $('assistantPanel').style.bottom='';$('assistantPanel').style.maxHeight=''
+});
 document.addEventListener('click',e=>{
   if(!assistantOpen)return;
   const panel=$('assistantPanel'),fab=$('assistantFab');
@@ -1683,32 +2168,32 @@ async function assistantSend(){
   let recentRecords=[];
   try{recentRecords=(await loadRecords()).slice(0,10).map(r=>({date:r.date,subjects:r.subjects,hours:r.hours,memo:r.memo}))}catch{}
 
-  const systemPrompt=`你是一个学习日志助手。用户输入有两种情况：
+  const systemPrompt=`你是学习日志助手。回复简洁精炼，一句话能说清绝不说两句。用户输入分两种情况：
 
 1. 操作指令 —— 识别意图并返回 JSON
-2. 闲聊/提问 —— 正常回复，不要返回 JSON
+2. 闲聊/提问 —— 正常回复，简短口语化，不返回 JSON
 
-判断规则：只有当用户明确要求「添加/删除/查询/统计/记录」学习相关内容时，才返回 JSON。否则直接用普通文字回复。
+判断规则：只有明确要「添加/删除/查询/统计」学习内容时才返回 JSON。否则正常聊天。
 
-JSON 格式（仅在操作指令时返回）：
-{"intent":"add|delete|query|stats","suggestedActions":[{"title":"标题","desc":"描述","action":"add|delete|query|stats","data":{}}]}
+JSON 格式（仅在操作指令时）：
+{"intent":"add|delete|query|stats","suggestedActions":[{"title":"标题","desc":"简短描述","action":"add|delete|query|stats","data":{}}]}
 
-意图说明：
-- add：用户要添加/记录学习笔记。提取 subjects（从 数学、英语、政治、408、软考 中选）、hours（时长数字）、memo（备注）
-- delete：用户要删除记录。提取日期（"今天"/"昨天"/"前天"或具体日期）
-- stats：用户要查看统计。提取范围（"本周"/"本月"/"全部"）
+意图：
+- add：用户要记录学习。提取 subjects（从 数学、英语、政治、408、软考 中选）、hours（时长）、memo（备注）
+- delete：用户要删除。提取日期（今天/昨天/前天或具体日期）
+- stats：用户要统计。提取范围（本周/本月/全部）
 
-示例（仅操作指令时使用）：
-用户"今天学了3小时数学复习了极限" → {"intent":"add","suggestedActions":[{"title":"添加学习记录","desc":"科目：数学 | 时长：3小时 | 备注：复习了极限","action":"add","data":{"subjects":["数学"],"hours":3,"memo":"复习了极限"}}]}
+示例：
+用户"今天学了3小时数学极限" → {"intent":"add","suggestedActions":[{"title":"添加学习记录","desc":"数学 3h 极限","action":"add","data":{"subjects":["数学"],"hours":3,"memo":"极限"}}]}
 
-用户"删除昨天的记录" → {"intent":"delete","suggestedActions":[{"title":"删除 ${dateStr(-1)} 的记录","desc":"将删除该日期的全部学习记录","action":"delete","data":{"date":"${dateStr(-1)}"}}]}
+用户"删除昨天记录" → {"intent":"delete","suggestedActions":[{"title":"删除 ${dateStr(-1)} 记录","desc":"删除该日期全部记录","action":"delete","data":{"date":"${dateStr(-1)}"}}]}
 
-用户"本周学了多少" → {"intent":"stats","suggestedActions":[{"title":"本周学习统计","desc":"查看本周学习天数、总时长","action":"stats","data":{"range":"week"}}]}
+用户"这周学了啥" → {"intent":"stats","suggestedActions":[{"title":"本周统计","desc":"学习天数、总时长","action":"stats","data":{"range":"week"}}]}
 
 今天：${today()}，昨天：${dateStr(-1)}，前天：${dateStr(-2)}。
 最近记录：${recentRecords.length?JSON.stringify(recentRecords):'无'}
 
-重要：闲聊时直接回复文字，不要返回 JSON。操作指令时只返回 JSON，不要有其他文字。`;
+重要：闲聊直接回复文字，别用JSON。操作指令只返回JSON，不要加其他文字。`;
 
   /* 带超时的请求 */
   const controller=new AbortController();
@@ -1823,33 +2308,32 @@ function removeTyping(){
 
 async function executeAssistantAction(a){
   const body=$('assistantBody');
-  /* 清除操作卡片 */
   document.querySelectorAll('.assistant-actions').forEach(el=>el.remove());
 
   if(a.action==='add'){
     const d=a.data;
-    body.innerHTML+=`<div class="assistant-msg typing" id="assistantTyping">正在添加…</div>`;
+    body.insertAdjacentHTML('beforeend',`<div class="assistant-msg typing" id="assistantTyping">正在添加…</div>`);
     body.scrollTop=body.scrollHeight;
     const record={date:today(),subjects:(d.subjects||[]).join('、'),hours:d.hours?String(d.hours):'',memo:d.memo||'',analysis:'',images:[]};
     const dest=await upsert(record);
     removeTyping();
-    body.innerHTML+=`<div class="assistant-msg ai">✅ 已${dest==='cloud'?'同步到云端':'保存到本地'}：${record.subjects} ${record.hours?record.hours+'小时':''} ${record.memo||''}</div>`;
+    body.insertAdjacentHTML('beforeend',`<div class="assistant-msg ai">✅ 已${dest==='cloud'?'同步到云端':'保存到本地'}：${record.subjects} ${record.hours?record.hours+'小时':''} ${record.memo||''}</div>`);
     updateStorageInfo();
   }
   else if(a.action==='delete'){
     const dateStr=a.data.date;
-    body.innerHTML+=`<div class="assistant-msg typing" id="assistantTyping">正在删除…</div>`;
+    body.insertAdjacentHTML('beforeend',`<div class="assistant-msg typing" id="assistantTyping">正在删除…</div>`);
     body.scrollTop=body.scrollHeight;
     const records=await loadRecords();
     const target=records.find(r=>r.date===dateStr);
     if(!target){
       removeTyping();
-      body.innerHTML+=`<div class="assistant-msg ai">未找到 ${dateStr} 的记录</div>`;
+      body.insertAdjacentHTML('beforeend',`<div class="assistant-msg ai">未找到 ${dateStr} 的记录</div>`);
     }else{
       const localOk=deleteLocalRecord(target.id);
       const cloudOk=sb?await cloudDeleteRecord(target.id):true;
       removeTyping();
-      body.innerHTML+=`<div class="assistant-msg ai">🗑️ 已删除 ${dateStr} 的记录（${target.subjects||'无科目'}）</div>`;
+      body.insertAdjacentHTML('beforeend',`<div class="assistant-msg ai">🗑️ 已删除 ${dateStr} 的记录（${target.subjects||'无科目'}）</div>`);
       updateStorageInfo();
     }
   }
@@ -1863,7 +2347,7 @@ async function executeAssistantAction(a){
     const totalH=filtered.reduce((s,r)=>s+(parseFloat(r.hours)||0),0);
     const subs=[...new Set(filtered.flatMap(r=>(r.subjects||'').split(/[,，、]/).map(s=>s.trim()).filter(Boolean)))];
     const label={week:'本周',month:'本月',all:'全部'}[range]||range;
-    body.innerHTML+=`<div class="assistant-msg ai">📊 ${label}统计：<br>记录 <b>${filtered.length}</b> 天，累计 <b>${totalH.toFixed(1)}</b> 小时<br>涉及科目：${subs.join('、')||'无'}</div>`;
+    body.insertAdjacentHTML('beforeend',`<div class="assistant-msg ai">📊 ${label}统计：<br>记录 <b>${filtered.length}</b> 天，累计 <b>${totalH.toFixed(1)}</b> 小时<br>涉及科目：${subs.join('、')||'无'}</div>`);
   }
   else if(a.action==='query'){
     const records=await loadRecords();
@@ -1878,6 +2362,15 @@ async function executeAssistantAction(a){
   }
   body.scrollTop=body.scrollHeight;
 }
+function addAiBubble(html){
+  const body=$('assistantBody');
+  body.insertAdjacentHTML('beforeend',`
+    <div class="assistant-msg-wrap ai">
+      <div class="assistant-avatar">🤖</div>
+      <div class="assistant-msg ai">${html}</div>
+    </div>`);
+  body.scrollTop=body.scrollHeight;
+}
 
 function dateStr(offset){
   const d=new Date();d.setDate(d.getDate()+offset);
@@ -1887,5 +2380,20 @@ function dateStr(offset){
 function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 </script>
 
+<!-- AI Result Bottom Sheet -->
+<div id="aiSheetBackdrop" class="ai-sheet-backdrop" onclick="closeAiSheet()"></div>
+<div id="aiSheet" class="ai-sheet">
+  <div class="ai-sheet-handle-area" id="aiSheetHandleArea">
+    <div class="ai-sheet-handle"></div>
+  </div>
+  <div class="ai-sheet-header">
+    <div class="ai-sheet-header-left">
+      <span class="result-ai-badge">AI</span>
+      <span id="aiSheetModel" class="result-model-label"></span>
+    </div>
+    <button class="ai-sheet-save-btn" id="aiSheetSaveBtn" onclick="saveAnalysisRecord()">保存</button>
+  </div>
+  <div class="ai-sheet-body" id="aiSheetBody"></div>
+</div>
 </body>
 </html>

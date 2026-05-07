@@ -567,6 +567,36 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
   .lock-bar{align-items:flex-start}
   .modal{padding:1.25rem;border-radius:16px 16px 0 0;max-height:90vh}
 }
+
+/* ── 进度面板 ── */
+.progress-hero{display:flex;gap:12px;margin-bottom:1.5rem}
+.progress-hero-box{flex:1;background:var(--bg-card);border:.5px solid var(--border);border-radius:var(--radius);padding:14px 16px;text-align:center}
+.progress-hero-val{font-family:'Noto Serif SC',serif;font-size:26px;font-weight:500;color:var(--text);line-height:1}
+.progress-hero-unit{font-size:12px;color:var(--text-3);margin-top:4px}
+
+.category-block{margin-bottom:1.5rem}
+.category-label{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem}
+.category-name{font-family:'Noto Serif SC',serif;font-size:16px;font-weight:500;color:var(--text)}
+.category-pct{font-size:12px;color:var(--text-3);background:var(--bg-muted);padding:3px 10px;border-radius:100px;border:.5px solid var(--border)}
+
+.subject-progress-item{background:var(--bg-card);border:.5px solid var(--border);border-radius:var(--radius);padding:1rem 1.1rem;margin-bottom:8px;transition:border-color .15s}
+.subject-progress-item:hover{border-color:var(--border-2)}
+.subject-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.subject-name{font-size:14px;font-weight:500;color:var(--text)}
+.subject-count{font-size:12px;color:var(--text-3)}
+.progress-bar-wrap{height:5px;background:var(--bg-muted);border-radius:3px;overflow:hidden}
+.progress-bar-fill{height:100%;border-radius:3px;background:var(--accent);transition:width .8s cubic-bezier(.4,0,.2,1)}
+.progress-bar-fill.full{background:var(--green)}
+
+.subject-last{font-size:11px;color:var(--text-3);margin-top:7px;display:flex;align-items:center;gap:5px}
+.subject-last-dot{width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0}
+
+.progress-empty{text-align:center;padding:3rem 2rem;color:var(--text-3);font-size:14px;line-height:1.9}
+.progress-reload-btn{font-family:inherit;font-size:12px;padding:5px 14px;border:.5px solid var(--border-2);border-radius:100px;background:var(--bg-card);color:var(--text-2);cursor:pointer;margin-top:10px}
+.progress-reload-btn:hover{background:var(--bg-muted)}
+
+.progress-tip{font-size:11px;color:var(--text-3);background:var(--bg-muted);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:1.25rem;line-height:1.6;border:.5px solid var(--border)}
+.progress-tip code{font-family:monospace;background:var(--bg);padding:1px 5px;border-radius:3px;font-size:11px}
 </style>
 </head>
 <body>
@@ -626,6 +656,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     <button class="tab active" onclick="switchTab('record')">今日记录</button>
     <button class="tab" onclick="switchTab('history')">历史回顾</button>
     <button class="tab" onclick="switchTab('timeline')">时间线</button>
+    <button class="tab" onclick="switchTab('progress')">进度</button>
     <button class="tab" onclick="switchTab('settings')">设置</button>
   </div>
 
@@ -642,6 +673,10 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
   <button class="bottom-nav-btn" onclick="switchTab('timeline')" data-tab="timeline">
     <svg viewBox="0 0 24 24"><path d="M4 6h16M4 10h16M4 14h8"/></svg>
     时间线
+  </button>
+  <button class="bottom-nav-btn" onclick="switchTab('progress')" data-tab="progress">
+    <svg viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+    进度
   </button>
   <button class="bottom-nav-btn" onclick="switchTab('settings')" data-tab="settings">
     <svg viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
@@ -844,6 +879,33 @@ CREATE POLICY "公开读写" ON app_settings FOR ALL USING (true);</pre>
       <span class="hint-text">导出的设置文件可在新设备导入快速配置，密钥经过混淆处理，请妥善保管</span>
     </div>
   </div>
+
+  <!-- 进度面板 -->
+  <div id="panel-progress" class="panel">
+    <div class="progress-tip">
+      进度由龙虾自动同步。每次完成一章笔记总结后，龙虾会调用
+      <code>up.mark_done()</code> 写入云端，页面刷新即可看到最新进度。
+    </div>
+    <div class="progress-hero" id="progressHero">
+      <div class="progress-hero-box">
+        <div class="progress-hero-val" id="heroTotalDone">—</div>
+        <div class="progress-hero-unit">已完成章节</div>
+      </div>
+      <div class="progress-hero-box">
+        <div class="progress-hero-val" id="heroTotalPct">—</div>
+        <div class="progress-hero-unit">整体完成率</div>
+      </div>
+      <div class="progress-hero-box">
+        <div class="progress-hero-val" id="heroActiveSub">—</div>
+        <div class="progress-hero-unit">在学科目</div>
+      </div>
+    </div>
+    <div id="progressContent">
+      <div class="progress-empty">
+        <span class="spinner-sm"></span><br>加载进度中…
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="overlay" id="overlay" style="display:none" onclick="if(event.target===this)closeModal()">
@@ -985,7 +1047,7 @@ function updateMemoPlaceholder(){
 function toggleChip(el){
   const v=el.dataset.val;
   if(selectedSubjects.has(v)){selectedSubjects.delete(v);el.classList.remove('selected')}
-  else{selectedSubjects.clear();document.querySelectorAll('.chip.selected').forEach(c=>c.classList.remove('selected'));selectedSubjects.add(v);el.classList.add('selected')}
+  else{selectedSubjects.add(v);el.classList.add('selected')}
   updateRecordButtons();
   updateMemoPlaceholder();
 }
@@ -1156,6 +1218,13 @@ async function loadRecords(){
   try{
     const data=await sbReq('study_logs?select=*&order=date.desc');
     if(data){
+      /* 合并 IndexedDB 待同步记录（离线时新增的记录云端还没有） */
+      const pending=await idbGetAll().catch(()=>[]);
+      const pendingNew=pending.filter(p=>!data.some(d=>d.id===p.id));
+      if(pendingNew.length){
+        data.push(...pendingNew);
+        data.sort((a,b)=>b.date.localeCompare(a.date));
+      }
       const json=JSON.stringify(data.map(r=>({id:r.id,date:r.date,subjects:r.subjects,hours:r.hours,memo:r.memo,analysis:r.analysis,images:r.images||[]})));
       /* 只有本地空间充足时才缓存，否则直接返回云端数据，避免删了又写满 */
       const used=getStorageSize()-localStorage.getItem(CACHE_KEY).length*2;
@@ -1343,7 +1412,9 @@ ${images.length>0?`- 图片：${images.length}张`:''}
               .replace(/^[\*\-]\s*/gm,'')          // 去掉行首的 * 或 -
               .replace(/^#+\s*/gm,'')              // 去掉行首的 #
               .replace(/^\d+\.\s+\*\*.+?\*\*：?\s*/gm,'') // 去掉 "1. **分析图片内容**：" 这类行
-              .replace(/^[①②③④⑤].*\n?/gm,'');   // 去掉序号分析行
+              .replace(/^[①②③④⑤].*\n?/gm,'')   // 去掉序号分析行
+              .replace(/字数[统计].*?[\s\S]*$/,'')   // 去掉末尾字数统计
+              .replace(/总计[：:]\s*\d+.*$/,'');   // 去掉总计行
             const html=cleaned.replace(/【(.+?)】/g,'<b style="display:block;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-top:1.25rem;margin-bottom:.35rem">$1</b>').replace(/\n/g,'<br>');
             contentEl.innerHTML=html;
           }else{
@@ -1380,7 +1451,9 @@ ${images.length>0?`- 图片：${images.length}张`:''}
       .replace(/^[\*\-]\s*/gm,'')
       .replace(/^#+\s*/gm,'')
       .replace(/^\d+\.\s+\*\*.+?\*\*：?\s*/gm,'')
-      .replace(/^[①②③④⑤].*\n?/gm,'');
+      .replace(/^[①②③④⑤].*\n?/gm,'')
+      .replace(/字数[统计].*?[\s\S]*$/,'')   // 去掉末尾字数统计
+      .replace(/总计[：:]\s*\d+.*$/,'');   // 去掉总计行
     pending={date:today(),subjects,hours,memo,analysis:saveText,images:images.map(i=>i.data)};
     if(typeof renderMathInElement==='function')renderMathInElement(contentEl,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],ignoreClass:'no-katex'});
     sheetSaveBtn.disabled=false;sheetSaveBtn.textContent='保存';
@@ -1533,7 +1606,7 @@ async function saveAnalysisRecord() {
 
 /* 切换 Tab */
 function switchTab(name){
-  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['record','history','timeline','settings'][i]===name));
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['record','history','timeline','progress','settings'][i]===name));
   document.querySelectorAll('.bottom-nav-btn').forEach(btn=>btn.classList.toggle('active',btn.dataset.tab===name));
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   $('panel-'+name).classList.add('active');
@@ -1541,7 +1614,7 @@ function switchTab(name){
   if(name==='history'){renderHistory();updateStorageInfo()}
   if(name!=='history')$('pieArea').style.display='none';
   if(name==='timeline')renderTimeline();
-  /* 切换 Tab 时自动关闭 AI 分析 sheet */
+  if(name==='progress')loadProgress(true);
   if($('aiSheet').classList.contains('show'))closeAiSheet();
 }
 
@@ -2280,7 +2353,7 @@ init();
   </div>
   <div class="assistant-input-wrap">
     <textarea class="assistant-input" id="assistantInput" rows="1" placeholder="说点什么…" onkeydown="assistantKeydown(event)"></textarea>
-    <button class="assistant-send" id="assistantSend" onclick="assistantSend()">
+    <button class="assistant-send" id="assistantSend" onclick="handleAssistantSend()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
     </button>
   </div>
@@ -2354,11 +2427,11 @@ function assistantExample(text){
   /* 去掉 emoji 前缀 */
   const clean=text.replace(/^[📝📊🗑️💬]\s*/,'');
   $('assistantInput').value=clean;
-  assistantSend();
+  handleAssistantSend();
 }
 
 function assistantKeydown(e){
-  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();assistantSend()}
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();handleAssistantSend()}
   /* 自动增高 */
   setTimeout(()=>{
     const ta=$('assistantInput');
@@ -2367,7 +2440,7 @@ function assistantKeydown(e){
   },0);
 }
 
-async function assistantSend(){
+async function handleAssistantSend(){
   const input=$('assistantInput');
   const text=input.value.trim();
   if(!text)return;
@@ -2611,6 +2684,131 @@ function dateStr(offset){
 }
 
 function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+/* ── 进度面板逻辑 ── */
+const CURRICULUM = {
+  "408": {
+    "计算机网络": 6,
+    "操作系统":   7,
+    "数据结构":   8,
+    "计算机组成原理": 8,
+  },
+  "数学": {
+    "高等数学": 18,
+    "线性代数":  6,
+    "概率论":    6,
+  },
+  "英语": {
+    "词汇":  10,
+    "阅读":  10,
+    "写作":   5,
+  },
+  "政治": {
+    "马原":   8,
+    "近代史": 5,
+    "毛中特": 8,
+    "思修":   6,
+  },
+  "软考": {
+    "系统架构": 12,
+    "软件工程":  8,
+  },
+};
+
+let _progressCache = null;
+let _progressLoading = false;
+
+async function loadProgress(force = false) {
+  if (_progressLoading) return;
+  if (_progressCache && !force) { renderProgress(_progressCache); return; }
+  if (!sb) {
+    document.getElementById('progressContent').innerHTML =
+      `<div class="progress-empty">未连接云端<br>请先在设置中配置 Supabase<button class="progress-reload-btn" onclick="switchTab('settings')">去设置</button></div>`;
+    return;
+  }
+  _progressLoading = true;
+  document.getElementById('progressContent').innerHTML =
+    '<div class="progress-empty">加载进度中…</div>';
+  try {
+    const rows = await sbReq('subject_progress?select=category,subject,chapter,status,updated_at,notes_summary');
+    _progressCache = rows || [];
+    renderProgress(_progressCache);
+  } catch(e) {
+    document.getElementById('progressContent').innerHTML =
+      `<div class="progress-empty">加载失败：${escHtml(e.message)}<br><button class="progress-reload-btn" onclick="loadProgress(true)">重试</button></div>`;
+  } finally {
+    _progressLoading = false;
+  }
+}
+
+function renderProgress(rows) {
+  const grouped = {};
+  rows.forEach(r => {
+    if (!grouped[r.category]) grouped[r.category] = {};
+    if (!grouped[r.category][r.subject]) grouped[r.category][r.subject] = { done: [], all: [], last: null };
+    const g = grouped[r.category][r.subject];
+    g.all.push(r);
+    if (r.status === 'done') g.done.push(r);
+    if (!g.last || r.updated_at > g.last.updated_at) g.last = r;
+  });
+
+  let totalDone = 0, totalChapters = 0, activeSubs = new Set();
+  Object.entries(CURRICULUM).forEach(([cat, subs]) => {
+    Object.entries(subs).forEach(([subj, total]) => {
+      totalChapters += total;
+      const done = grouped[cat]?.[subj]?.done.length || 0;
+      totalDone += done;
+      if (done > 0) activeSubs.add(subj);
+    });
+  });
+  const pct = totalChapters ? Math.round(totalDone / totalChapters * 100) : 0;
+  document.getElementById('heroTotalDone').textContent = totalDone;
+  document.getElementById('heroTotalPct').textContent = pct + '%';
+  document.getElementById('heroActiveSub').textContent = activeSubs.size;
+
+  let html = '';
+  Object.entries(CURRICULUM).forEach(([cat, subs]) => {
+    const catDone = Object.entries(subs).reduce((s, [subj]) => s + (grouped[cat]?.[subj]?.done.length || 0), 0);
+    const catTotal = Object.values(subs).reduce((s, v) => s + v, 0);
+    const catPct = catTotal ? Math.round(catDone / catTotal * 100) : 0;
+
+    html += `<div class="category-block">
+      <div class="category-label">
+        <span class="category-name">${escHtml(cat)}</span>
+        <span class="category-pct">${catDone}/${catTotal} · ${catPct}%</span>
+      </div>`;
+
+    Object.entries(subs).forEach(([subj, total]) => {
+      const info = grouped[cat]?.[subj] || { done: [], last: null };
+      const done = info.done.length;
+      const pct  = total ? Math.round(done / total * 100) : 0;
+      const isFull = done >= total && total > 0;
+      const lastRow = info.last;
+      const lastChap = lastRow?.chapter || '';
+      const lastDate = lastRow?.updated_at
+        ? new Date(lastRow.updated_at).toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' })
+        : '';
+
+      html += `<div class="subject-progress-item">
+        <div class="subject-row">
+          <span class="subject-name">${escHtml(subj)}</span>
+          <span class="subject-count">${done} / ${total} 章</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill${isFull ? ' full' : ''}" style="width:${pct}%"></div>
+        </div>
+        ${lastChap ? `<div class="subject-last"><div class="subject-last-dot"></div>最近：${escHtml(lastChap)}${lastDate ? ' · ' + lastDate : ''}</div>` : ''}
+      </div>`;
+    });
+
+    html += `</div>`;
+  });
+
+  if (!html) {
+    html = `<div class="progress-empty">云端暂无进度数据<br>龙虾完成笔记总结后会自动同步</div>`;
+  }
+  document.getElementById('progressContent').innerHTML = html;
+}
 </script>
 
 <!-- AI Result Bottom Sheet -->

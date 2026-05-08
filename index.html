@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"/>
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],ignoreClass:'no-katex'});"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -483,6 +484,15 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
   transition:all .15s;-webkit-tap-highlight-color:transparent
 }
 .ai-fab.done .ai-fab-cancel{display:flex}
+
+/* ── 登录按钮 ── */
+.auth-btn:hover{color:var(--text);border-color:var(--text-3)}
+.auth-btn svg{flex-shrink:0}
+
+@media(max-width:640px){
+  #authBtn{font-size:0;padding:5px;gap:0}
+  #authBtn svg{width:18px;height:18px}
+}
 .ai-fab-cancel:hover{background:#ef4444;color:#fff}
 @media(max-width:640px){
   .ai-fab{bottom:68px;right:14px;padding:9px 14px;font-size:11px}
@@ -618,6 +628,10 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     </div>
     <div style="display:flex;align-items:center;gap:10px">
       <span class="date-label" id="todayLabel"></span>
+      <button class="auth-btn" id="authBtn" onclick="openAuthModal()" style="font-family:inherit;font-size:13px;padding:5px 12px;border:.5px solid var(--border);border-radius:100px;background:var(--bg-card);color:var(--text-2);cursor:pointer;display:flex;align-items:center;gap:4px;transition:all .15s">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span id="authBtnText">登录</span>
+      </button>
       <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
         <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
         <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
@@ -882,9 +896,9 @@ CREATE POLICY "公开读写" ON app_settings FOR ALL USING (true);</pre>
 
   <!-- 进度面板 -->
   <div id="panel-progress" class="panel">
-    <div class="progress-tip">
-      进度由龙虾自动同步。每次完成一章笔记总结后，龙虾会调用
-      <code>up.mark_done()</code> 写入云端，页面刷新即可看到最新进度。
+    <div class="progress-tip" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+      <span>进度由龙虾自动同步。每次完成一章笔记总结后，龙虾会调用 <code>up.mark_done()</code> 写入云端，页面刷新即可看到最新进度。</span>
+      <button onclick="openCurriculumEditor()" style="font-family:inherit;font-size:12px;padding:5px 12px;border:.5px solid var(--border-2);border-radius:100px;background:var(--bg-card);color:var(--text-2);cursor:pointer;white-space:nowrap;flex-shrink:0;">编辑课程</button>
     </div>
     <div class="progress-hero" id="progressHero">
       <div class="progress-hero-box">
@@ -931,16 +945,7 @@ CREATE POLICY "公开读写" ON app_settings FOR ALL USING (true);</pre>
   <div class="lightbox-counter" id="lightboxCounter"></div>
 </div>
 
-<div class="overlay" id="pwdOverlay" style="display:none;">
-  <div class="modal" style="max-width:320px;text-align:center;">
-    <div class="modal-head"><h3>删除确认</h3><button class="modal-close" onclick="closePwdOverlay()">✕</button></div>
-    <div style="padding:1rem 0;">
-      <p style="font-size:14px;color:var(--text-2);margin-bottom:1rem;">请输入管理员密码</p>
-      <input id="pwdInput" type="password" placeholder="密码" style="width:100%;padding:10px;font-size:14px;border:.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-muted);color:var(--text);outline:none;text-align:center;"/>
-      <button class="btn-primary" style="margin-top:1rem;" onclick="verifyDeletePwd()">确认</button>
-    </div>
-  </div>
-</div>
+<div id="pwdOverlay" style="display:none"></div>
 <div class="overlay" id="confirmOverlay" style="display:none;">
   <div class="modal" style="max-width:320px;text-align:center;">
     <div class="modal-head"><h3>确认删除</h3><button class="modal-close" onclick="closeConfirmOverlay()">✕</button></div>
@@ -950,6 +955,23 @@ CREATE POLICY "公开读写" ON app_settings FOR ALL USING (true);</pre>
         <button class="btn" style="flex:1;" onclick="closeConfirmOverlay()">取消</button>
         <button class="btn-primary" id="confirmDeleteBtn" onclick="executeDelete()" style="flex:1;margin-top:0;">确认删除</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- 课程编辑 Modal -->
+<div class="overlay" id="curriculumOverlay" style="display:none;" onclick="if(event.target===this)closeCurriculumEditor()">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-head">
+      <h3>编辑课程结构</h3>
+      <button class="modal-close" onclick="closeCurriculumEditor()">✕</button>
+    </div>
+    <p style="font-size:12px;color:var(--text-3);margin-bottom:1rem;">格式：每行一条，「大类/科目 章节数」，如「数学/高等数学 18」</p>
+    <textarea id="curriculumEditor" style="width:100%;min-height:260px;font-family:monospace;font-size:13px;padding:10px;border:.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-muted);color:var(--text);outline:none;resize:vertical;line-height:1.7"></textarea>
+    <div id="curriculumEditorErr" style="font-size:12px;color:var(--red);min-height:18px;margin-top:6px"></div>
+    <div style="display:flex;gap:10px;margin-top:1rem;">
+      <button class="btn" onclick="resetCurriculumToDefault()" style="white-space:nowrap">恢复默认</button>
+      <button class="btn-primary" onclick="saveCurriculumFromEditor()" style="margin-top:0">保存</button>
     </div>
   </div>
 </div>
@@ -1172,7 +1194,9 @@ async function upsert(record){
   return'local';
 }
 async function uploadToCloud(record){
-  const payload={date:record.date,subjects:record.subjects,hours:record.hours?parseFloat(record.hours):null,memo:record.memo,analysis:record.analysis,images:record.images||[],updated_at:new Date().toISOString()};
+  /* 未登录不允许写云端（RLS 会拒绝且无法绑定 user_id） */
+  if(!_authSession?.user?.id)throw new Error('未登录，无法同步到云端');
+  const payload={date:record.date,subjects:record.subjects,hours:record.hours?parseFloat(record.hours):null,memo:record.memo,analysis:record.analysis,images:record.images||[],updated_at:new Date().toISOString(),user_id:_authSession.user.id};
   const exist=await sbReq(`study_logs?id=eq.${record.id}&select=id`);
   if(exist&&exist.length>0){
     await sbReq(`study_logs?id=eq.${record.id}`,{method:'PATCH',body:JSON.stringify(payload)});
@@ -1187,7 +1211,7 @@ function scheduleSync(){
   _syncTimer=setInterval(trySyncPending,15000);
 }
 async function trySyncPending(){
-  if(!sb)return;
+  if(!sb||!_authSession?.user?.id)return;
   const pending=await idbGetAll();
   if(!pending.length){clearInterval(_syncTimer);_syncTimer=null;return}
   let anyFailed=false;
@@ -1214,9 +1238,11 @@ async function cloudDeleteRecord(id){
   }
 }
 async function loadRecords(){
-  if(!sb)return localRecords();
+  /* 未登录：只读本地缓存，不查云端（避免看到别人数据） */
+  if(!sb||!_authSession?.user?.id)return localRecords();
   try{
-    const data=await sbReq('study_logs?select=*&order=date.desc');
+    const uid=_authSession.user.id;
+    const data=await sbReq(`study_logs?select=*&order=date.desc&user_id=eq.${uid}`);
     if(data){
       /* 合并 IndexedDB 待同步记录（离线时新增的记录云端还没有） */
       const pending=await idbGetAll().catch(()=>[]);
@@ -1295,7 +1321,12 @@ async function saveSimpleRecord(){
   if(!hasContent()){toast('请至少填写一项信息');return}
   const record={date:today(),subjects:getSubjectsStr(),hours:$('hours').value,memo:$('memo').value,analysis:'',images:images.map(i=>i.data)};
   const btn=$('saveRecordBtn');btn.disabled=true;btn.innerHTML='<span class="spinner"></span>保存中…';
-  try{const dest=await upsert(record);toast(dest==='cloud'?'已同步到云端':'已保存到本地');resetForm();updateStorageInfo()}
+  try{
+    const dest=await upsert(record);
+    if(dest==='cloud'){toast('已同步到云端')}
+    else{toast('已保存本地' + (!_authSession?.user?.id ? '（登录后可同步云端）' : '，等待联网同步'))}
+    resetForm();updateStorageInfo()
+  }
   catch(e){toast('保存失败：'+e.message)}
   finally{btn.innerHTML='直接保存';updateRecordButtons()}
 }
@@ -1611,6 +1642,7 @@ function switchTab(name){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   $('panel-'+name).classList.add('active');
   $('deleteModeBtn').style.display=name==='history'?'inline-flex':'none';
+  if(name!=='history'&&deleteMode){deleteMode=false;$('deleteModeBtn').textContent='删除模式'}
   if(name==='history'){renderHistory();updateStorageInfo()}
   if(name!=='history')$('pieArea').style.display='none';
   if(name==='timeline')renderTimeline();
@@ -1763,17 +1795,24 @@ function drawPieChart(records, filterLabel) {
 
 /* 历史回顾 */
 async function renderHistory(){
+  if(!_authSession?.user?.id){
+    $('statsRow').innerHTML='';
+    $('recordList').innerHTML='<div class="empty">请先登录，才能查看云端学习记录</div>';
+    $('chartArea').style.display='none';
+    $('pieArea').style.display='none';
+    return;
+  }
   const list=$('recordList');
   list.innerHTML='<div class="empty"><span class="spinner-sm"></span></div>';
   const filter=$('filterSel').value;
   let records=await loadRecords();
   drawLineChart(records);
-  const _filterLabel = {'all':'全部','week':'近一周','month':'近一月'}[$('filterSel').value] || '全部';
-  drawPieChart(records, _filterLabel);
   const now=new Date();
   if(filter==='week')records=records.filter(r=>new Date(r.date)>=new Date(now-7*864e5));
   if(filter==='month')records=records.filter(r=>new Date(r.date)>=new Date(now-30*864e5));
   _records=records;
+  const _filterLabel = {'all':'全部','week':'近一周','month':'近一月'}[filter] || '全部';
+  drawPieChart(_records, _filterLabel);
   const totalH=records.reduce((s,r)=>s+(parseFloat(r.hours)||0),0);
   const subs=[...new Set(records.flatMap(r=>(r.subjects||'').split(/[,，、]/).map(s=>s.trim()).filter(Boolean)))];
   $('statsRow').innerHTML=`
@@ -1858,27 +1897,11 @@ function openRecord(i){
   $('overlay').style.display='flex';
 }
 function closeModal(){$('overlay').style.display='none'}
-function closePwdOverlay(){$('pwdOverlay').style.display='none';$('pwdInput').value=''}
-function closeConfirmOverlay(){$('confirmOverlay').style.display='none'}
-function verifyDeletePwd(){
-  const pwd=$('pwdInput').value;
-  if(pwd===DELETE_PWD){
-    closePwdOverlay();
-    deleteMode=true;
-    $('deleteModeBtn').textContent='退出删除';
-    renderHistory();
-  }else{
-    toast('密码错误');
-  }
-}
+function closePwdOverlay(){$("pwdOverlay").style.display="none"}
+function closeConfirmOverlay(){$("confirmOverlay").style.display="none"}
 function toggleDeleteMode(){
-  if(deleteMode){
-    deleteMode=false;
-    $('deleteModeBtn').textContent='删除模式';
-    renderHistory();
-  }else{
-    $('pwdOverlay').style.display='flex';
-  }
+  if(deleteMode){deleteMode=false;$("deleteModeBtn").textContent="删除模式";renderHistory()}
+  else{deleteMode=true;$("deleteModeBtn").textContent="退出删除";renderHistory()}
 }
 async function confirmDeleteRecord(index){
   pendingDeleteIndex=index;
@@ -2044,7 +2067,11 @@ let _aiAnalyzing=false;
 
 async function renderTimeline(){
   const container=$('timelineList');
-  container.innerHTML='<div class="tl-empty"><span class="spinner-sm"></span></div>';
+  if(!_authSession?.user?.id){
+    container.innerHTML='<div class="tl-empty">请先登录，才能查看时间线</div>';
+    $('tlFilter').innerHTML='';
+    return;
+  }
   const filterArea=$('tlFilter');
   const allRecords=await loadRecords();
   const withImages=allRecords.filter(r=>Array.isArray(r.images)&&r.images.length>0);
@@ -2360,6 +2387,158 @@ init();
 </div>
 
 <script>
+/* ===== Supabase Auth 登录逻辑 ===== */
+let _sbClient = null;   // Supabase JS Client 实例
+let _authSession = null; // 当前登录会话
+
+function initSbClient() {
+  if (_sbClient) return;
+  try {
+    _sbClient = window.supabase.createClient(
+      DEFAULT_SB_URL.replace(/\/$/, ''),
+      DEFAULT_SB_KEY
+    );
+    // 监听登录态变化（页面加载、token 刷新都会触发）
+    _sbClient.auth.onAuthStateChange((event, session) => {
+      _authSession = session;
+      updateAuthUI();
+      if (event === 'SIGNED_IN') {
+        toast('登录成功 ✓');
+        closeAuthModal();
+        syncLocalToCloud();
+        /* 刷新当前面板 */
+        const tabNames=['record','history','timeline','progress','settings'];
+        const activeTab=document.querySelector('.tab.active');
+        const curIdx=activeTab?[...document.querySelectorAll('.tab')].indexOf(activeTab):-1;
+        switchTab(curIdx>=0?tabNames[curIdx]:'history');
+        renderHistory();
+      }
+      if (event === 'SIGNED_OUT') {
+        toast('已退出登录');
+        updateAuthUI();
+        renderHistory();
+      }
+    });
+  } catch (e) {
+    console.warn('Supabase Auth 初始化失败：', e.message);
+  }
+}
+
+async function handleAuth() {
+  const email = $('authEmail').value.trim();
+  const pwd   = $('authPwd').value;
+  const btn    = $('authSubmitBtn');
+  const errEl  = $('authError');
+  errEl.textContent = '';
+
+  if (!email || !pwd) { errEl.textContent = '请填写邮箱和密码'; return; }
+  if (pwd.length < 6)  { errEl.textContent = '密码至少6位'; return; }
+
+  btn.disabled = true;
+  btn.textContent = '处理中…';
+
+  try {
+    // 先尝试登录，失败则自动注册
+    let { data, error } = await _sbClient.auth.signInWithPassword({ email, password: pwd });
+    if (error) {
+      // 用户不存在 → 自动注册
+      const { data: d2, error: e2 } = await _sbClient.auth.signUp({ email, password: pwd });
+      if (e2) throw e2;
+      errEl.style.color = 'var(--green)';
+      errEl.textContent = '注册成功！请直接点登录（或检查邮箱验证设置）';
+      btn.disabled = false;
+      btn.textContent = '登录';
+      return;
+    }
+    // 登录成功，onAuthStateChange 会自动触发
+  } catch (e) {
+    errEl.style.color = 'var(--red)';
+    errEl.textContent = e.message || '操作失败';
+    btn.disabled = false;
+    btn.textContent = '登录 / 注册';
+  }
+}
+
+async function handleLogout() {
+  if (!_sbClient) return;
+  await _sbClient.auth.signOut();
+  _authSession = null;
+  updateAuthUI();
+}
+
+function updateAuthUI() {
+  const btn     = $('authBtn');
+  const btnText = $('authBtnText');
+  const isLoggedIn = !!(_authSession?.access_token);
+
+  if (isLoggedIn) {
+    const email = _authSession.user.email || '';
+    btnText.textContent = email.split('@')[0];
+    btn.title = email;
+    btn.onclick = handleLogout;
+    btn.style.borderColor = 'var(--green)';
+  } else {
+    btnText.textContent = '登录';
+    btn.title = '点击登录';
+    btn.onclick = openAuthModal;
+    btn.style.borderColor = '';
+  }
+}
+
+function openAuthModal() {
+  $('authOverlay').style.display = 'flex';
+  $('authEmail').value = '';
+  $('authPwd').value = '';
+  $('authError').textContent = '';
+  setTimeout(() => $('authEmail').focus(), 100);
+}
+
+function closeAuthModal() {
+  $('authOverlay').style.display = 'none';
+}
+
+// 登录后，把 IndexedDB 离线队列里的记录同步到云端（绑定 user_id）
+async function syncLocalToCloud() {
+  if (!_authSession?.access_token || !_sbClient) return;
+  const pending = await idbGetAll().catch(() => []);
+  for (const rec of pending) {
+    try {
+      await _sbClient.from('study_logs').upsert({
+        id: rec.id,
+        date: rec.date,
+        subjects: rec.subjects,
+        hours: rec.hours ? parseFloat(rec.hours) : null,
+        memo: rec.memo,
+        analysis: rec.analysis,
+        images: rec.images || [],
+        user_id: _authSession.user.id,
+        updated_at: new Date().toISOString()
+      });
+      await idbDelete(rec.id);
+    } catch (e) { console.warn('同步失败：', rec.id, e.message); }
+  }
+  if (pending.length) { toast(`已同步 ${pending.length} 条记录到云端`); renderHistory(); }
+}
+
+// 改写 sbReq：有登录态时用 JWT，否则 fallback 到 anon key
+async function sbReq(path, opts = {}) {
+  if (!sb) throw new Error('未配置云端');
+  let headers = { 'Content-Type': 'application/json', Prefer: opts.prefer || '', ...(opts.headers || {}) };
+  if (_authSession?.access_token) {
+    headers['Authorization'] = 'Bearer ' + _authSession.access_token;
+  } else {
+    headers['apikey']  = sb.key;
+    headers['Authorization'] = 'Bearer ' + sb.key;
+  }
+  const r = await fetch(sb.url + '/rest/v1/' + path, { ...opts, headers });
+  if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.message || r.statusText); }
+  const t = await r.text();
+  return t ? JSON.parse(t) : null;
+}
+
+// 初始化时调用
+initSbClient();
+
 /* ===== AI 助手逻辑 ===== */
 let assistantOpen=false;
 let hintTimer=null;
@@ -2631,15 +2810,14 @@ async function executeAssistantAction(a){
     body.insertAdjacentHTML('beforeend',`<div class="assistant-msg typing" id="assistantTyping">正在删除…</div>`);
     body.scrollTop=body.scrollHeight;
     const records=await loadRecords();
-    const target=records.find(r=>r.date===dateStr);
-    if(!target){
+    const targets=records.filter(r=>r.date===dateStr);
+    if(!targets.length){
       removeTyping();
       body.insertAdjacentHTML('beforeend',`<div class="assistant-msg ai">未找到 ${dateStr} 的记录</div>`);
     }else{
-      const localOk=deleteLocalRecord(target.id);
-      const cloudOk=sb?await cloudDeleteRecord(target.id):true;
+      for(const t of targets){deleteLocalRecord(t.id);if(sb)await cloudDeleteRecord(t.id).catch(()=>{})}
       removeTyping();
-      body.insertAdjacentHTML('beforeend',`<div class="assistant-msg ai">🗑️ 已删除 ${dateStr} 的记录（${target.subjects||'无科目'}）</div>`);
+      body.insertAdjacentHTML('beforeend',`<div class="assistant-msg ai">🗑️ 已删除 ${dateStr} 的 ${targets.length} 条记录</div>`);
       updateStorageInfo();
     }
   }
@@ -2686,39 +2864,69 @@ function dateStr(offset){
 function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 
 /* ── 进度面板逻辑 ── */
-const CURRICULUM = {
-  "408": {
-    "计算机网络": 6,
-    "操作系统":   7,
-    "数据结构":   8,
-    "计算机组成原理": 8,
-  },
-  "数学": {
-    "高等数学": 18,
-    "线性代数":  6,
-    "概率论":    6,
-  },
-  "英语": {
-    "词汇":  10,
-    "阅读":  10,
-    "写作":   5,
-  },
-  "政治": {
-    "马原":   8,
-    "近代史": 5,
-    "毛中特": 8,
-    "思修":   6,
-  },
-  "软考": {
-    "系统架构": 12,
-    "软件工程":  8,
-  },
+const CURRICULUM_DEFAULT = {
+  "408": { "计算机网络": 6, "操作系统": 7, "数据结构": 8, "计算机组成原理": 8 },
+  "数学": { "高等数学": 18, "线性代数": 6, "概率论": 6 },
+  "英语": { "词汇": 10, "阅读": 10, "写作": 5 },
+  "政治": { "马原": 8, "近代史": 5, "毛中特": 8, "思修": 6 },
+  "软考": { "系统架构": 12, "软件工程": 8 },
 };
+function loadCurriculum(){
+  try{ const s=localStorage.getItem('study_curriculum'); return s?JSON.parse(s):CURRICULUM_DEFAULT; }catch{ return CURRICULUM_DEFAULT; }
+}
+function saveCurriculum(c){ localStorage.setItem('study_curriculum',JSON.stringify(c)); }
+let CURRICULUM = loadCurriculum();
 
 let _progressCache = null;
 let _progressLoading = false;
 
+/* ── 课程编辑器 ── */
+function curriculumToText(c){
+  return Object.entries(c).flatMap(([cat,subs])=>
+    Object.entries(subs).map(([subj,n])=>`${cat}/${subj} ${n}`)
+  ).join('\n');
+}
+function textToCurriculum(text){
+  const result={};
+  for(const line of text.split('\n')){
+    const t=line.trim();if(!t)continue;
+    const m=t.match(/^(.+?)\/(.+?)\s+(\d+)$/);
+    if(!m)throw new Error(`格式错误：「${t}」，应为「大类/科目 数字」`);
+    const [,cat,subj,n]=m;
+    if(!result[cat])result[cat]={};
+    result[cat][subj]=parseInt(n);
+  }
+  if(!Object.keys(result).length)throw new Error('内容不能为空');
+  return result;
+}
+function openCurriculumEditor(){
+  $('curriculumEditor').value=curriculumToText(CURRICULUM);
+  $('curriculumEditorErr').textContent='';
+  $('curriculumOverlay').style.display='flex';
+}
+function closeCurriculumEditor(){$('curriculumOverlay').style.display='none'}
+function saveCurriculumFromEditor(){
+  const errEl=$('curriculumEditorErr');
+  try{
+    const c=textToCurriculum($('curriculumEditor').value);
+    CURRICULUM=c;saveCurriculum(c);
+    _progressCache=null;
+    closeCurriculumEditor();
+    loadProgress(true);
+    toast('课程结构已保存');
+  }catch(e){errEl.textContent=e.message}
+}
+function resetCurriculumToDefault(){
+  $('curriculumEditor').value=curriculumToText(CURRICULUM_DEFAULT);
+  $('curriculumEditorErr').textContent='';
+}
+
 async function loadProgress(force = false) {
+  if(!_authSession?.user?.id){
+    document.getElementById('progressContent').innerHTML=
+      '<div class="progress-empty">请先登录，才能查看学习进度</div>';
+    return;
+  }
   if (_progressLoading) return;
   if (_progressCache && !force) { renderProgress(_progressCache); return; }
   if (!sb) {
@@ -2730,7 +2938,8 @@ async function loadProgress(force = false) {
   document.getElementById('progressContent').innerHTML =
     '<div class="progress-empty">加载进度中…</div>';
   try {
-    const rows = await sbReq('subject_progress?select=category,subject,chapter,status,updated_at,notes_summary');
+    const uid = _authSession.user.id;
+    const rows = await sbReq(`subject_progress?select=category,subject,chapter,status,updated_at,notes_summary&user_id=eq.${uid}`);
     _progressCache = rows || [];
     renderProgress(_progressCache);
   } catch(e) {
@@ -2810,6 +3019,26 @@ function renderProgress(rows) {
   document.getElementById('progressContent').innerHTML = html;
 }
 </script>
+
+<!-- 登录 Modal -->
+<div class="overlay" id="authOverlay" style="display:none;z-index:80" onclick="if(event.target===this)closeAuthModal()">
+  <div class="modal" style="max-width:380px;text-align:center;">
+    <div class="modal-head">
+      <h3 id="authModalTitle">登录 / 注册</h3>
+      <button class="modal-close" onclick="closeAuthModal()">✕</button>
+    </div>
+    <div style="padding:1.25rem 0 0.5rem">
+      <div style="font-size:12px;color:var(--text-3);margin-bottom:14px" id="authHint">用邮箱注册，密码至少6位</div>
+      <input id="authEmail" type="email" placeholder="邮箱" style="width:100%;padding:10px 12px;font-size:14px;border:.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-muted);color:var(--text);outline:none;margin-bottom:10px;font-family:inherit">
+      <input id="authPwd" type="password" placeholder="密码（≥6位）" style="width:100%;padding:10px 12px;font-size:14px;border:.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-muted);color:var(--text);outline:none;margin-bottom:14px;font-family:inherit" onkeydown="if(event.key==='Enter')handleAuth()">
+      <button class="btn-primary" id="authSubmitBtn" onclick="handleAuth()" style="margin-top:0">登录 / 注册</button>
+      <div id="authError" style="font-size:12px;color:var(--red);margin-top:10px;min-height:18px"></div>
+      <div style="font-size:11px;color:var(--text-3);margin-top:14px;line-height:1.6">
+        登录后数据自动同步到云端<br>本设备未登录时数据仅保存在本地
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- AI Result Bottom Sheet -->
 <div id="aiSheetBackdrop" class="ai-sheet-backdrop" onclick="closeAiSheet()"></div>

@@ -1,5 +1,6 @@
 export default async function handler(req, res) {
-  const path = req.url.replace('/api/sb', '');
+  const url = new URL(req.url, 'http://localhost');
+  const path = url.pathname.replace('/api/sb', '') + (url.search || '');
   const target = 'https://epxuylxivkdfxxiucxgg.supabase.co' + path;
   
   const resp = await fetch(target, {

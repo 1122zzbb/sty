@@ -1260,7 +1260,7 @@ async function loadRecords(){
       }
       const json=JSON.stringify(data.map(r=>({id:r.id,date:r.date,subjects:r.subjects,hours:r.hours,memo:r.memo,analysis:r.analysis,images:r.images||[]})));
       /* 只有本地空间充足时才缓存，否则直接返回云端数据，避免删了又写满 */
-      const used=getStorageSize()-localStorage.getItem(CACHE_KEY).length*2;
+      const used=getStorageSize()-(localStorage.getItem(CACHE_KEY)||'').length*2;
       if(used+json.length*2<4.8*1024*1024){
         localStorage.setItem(CACHE_KEY,json);
       }

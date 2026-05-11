@@ -1,6 +1,6 @@
 export const config = {
   runtime: 'edge',
-  regions: ['hkg'], // 香港节点，国内访问快
+  regions: ['hkg1'], // 香港节点，国内访问快
 };
 
 export default async function handler(req) {

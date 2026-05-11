@@ -1082,8 +1082,19 @@ function cacheRecord(r){
 
 /* Supabase */
 function initSb(url,key){sb=(url&&key)?{url:url.replace(/\/$/,''),key}:null}
+/* 是否走 Vercel 代理（同域名 /api/sb 路径），国内访问更快 */
+const USE_PROXY=true;
 async function sbReq(path,opts={}){
-  const r=await fetch(sb.url+'/rest/v1/'+path,{...opts,headers:{apikey:sb.key,Authorization:'Bearer '+sb.key,'Content-Type':'application/json',Prefer:opts.prefer||'',...(opts.headers||{})}});
+  let url,headers;
+  if(USE_PROXY){
+    /* 走 Vercel 代理 —— 利用 Vercel 香港边缘节点加速 */
+    url='/api/sb/rest/v1/'+path;
+    headers={'Content-Type':'application/json',Prefer:opts.prefer||'',...(opts.headers||{})};
+  }else{
+    url=sb.url+'/rest/v1/'+path;
+    headers={apikey:sb.key,Authorization:'Bearer '+sb.key,'Content-Type':'application/json',Prefer:opts.prefer||'',...(opts.headers||{})};
+  }
+  const r=await fetch(url,{...opts,headers});
   if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.message||r.statusText)}
   const t=await r.text();return t?JSON.parse(t):null;
 }
@@ -1246,28 +1257,61 @@ async function cloudDeleteRecord(id){
     return false;
   }
 }
-async function loadRecords(){
+/* Stale-While-Revalidate 策略：先返回缓存秒开，后台静默刷新 */
+let _swr_refreshing=false;
+async function loadRecords(opts={}){
+  const {background=false}=opts;
   if(!sb)return localRecords();
+  
+  /* 如果有本地缓存且非强制刷新，先返回缓存（秒开） */
+  const cached=localRecords();
+  if(cached.length>0&&!background&&!_swr_refreshing){
+    /* 后台静默刷新 */
+    _swr_refreshing=true;
+    setTimeout(()=>refreshFromCloud(),50);
+    return cached;
+  }
+  
+  /* 无缓存时才阻塞等待云端 */
   try{
-    const data=await sbReq('study_logs?select=*&order=date.desc');
+    const data=await fetchCloudRecords();
+    if(data)return data;
+  }catch{if(!background)toast('云端读取失败，显示本地缓存')}
+  return cached;
+}
+
+async function fetchCloudRecords(){
+  const data=await sbReq('study_logs?select=*&order=date.desc');
+  if(!data)return null;
+  /* 合并 IndexedDB 待同步记录 */
+  const pending=await idbGetAll().catch(()=>[]);
+  const pendingNew=pending.filter(p=>!data.some(d=>d.id===p.id));
+  if(pendingNew.length){
+    data.push(...pendingNew);
+    data.sort((a,b)=>b.date.localeCompare(a.date));
+  }
+  /* 写入本地缓存 */
+  const json=JSON.stringify(data.map(r=>({id:r.id,date:r.date,subjects:r.subjects,hours:r.hours,memo:r.memo,analysis:r.analysis,images:r.images||[]})));
+  const used=getStorageSize()-(localStorage.getItem(CACHE_KEY)||'').length*2;
+  if(used+json.length*2<4.8*1024*1024){
+    localStorage.setItem(CACHE_KEY,json);
+  }
+  return data;
+}
+
+async function refreshFromCloud(){
+  try{
+    const data=await fetchCloudRecords();
     if(data){
-      /* 合并 IndexedDB 待同步记录（离线时新增的记录云端还没有） */
-      const pending=await idbGetAll().catch(()=>[]);
-      const pendingNew=pending.filter(p=>!data.some(d=>d.id===p.id));
-      if(pendingNew.length){
-        data.push(...pendingNew);
-        data.sort((a,b)=>b.date.localeCompare(a.date));
-      }
-      const json=JSON.stringify(data.map(r=>({id:r.id,date:r.date,subjects:r.subjects,hours:r.hours,memo:r.memo,analysis:r.analysis,images:r.images||[]})));
-      /* 只有本地空间充足时才缓存，否则直接返回云端数据，避免删了又写满 */
-      const used=getStorageSize()-(localStorage.getItem(CACHE_KEY)||'').length*2;
-      if(used+json.length*2<4.8*1024*1024){
-        localStorage.setItem(CACHE_KEY,json);
-      }
-      return data;
+      /* 静默刷新后更新视图（不打断用户） */
+      _records=data;
+      const activePanel=document.querySelector('.panel.active');
+      if(activePanel&&activePanel.id==='panel-history'){renderHistory()}
+      else if(activePanel&&activePanel.id==='panel-timeline'){renderTimeline()}
+      drawLineChart(data);
     }
-  }catch{toast('云端读取失败，显示本地缓存')}
-  return localRecords();
+  }catch(e){console.warn('后台刷新失败:',e.message)}
+  finally{_swr_refreshing=false}
 }
 
 function today(){return new Date().toLocaleDateString('zh-CN',{year:'numeric',month:'2-digit',day:'2-digit'}).replace(/\//g,'-')}

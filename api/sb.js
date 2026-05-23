@@ -16,12 +16,15 @@ export default async function handler(req, res) {
       'Authorization': 'Bearer ' + sbKey,
       'Content-Type': 'application/json',
       'Prefer': req.headers['prefer'] || '',
+      ...(req.headers['range'] ? {'Range': req.headers['range']} : {}),
     },
     body: ['GET','HEAD'].includes(req.method) ? undefined : JSON.stringify(req.body),
   });
 
   const data = await resp.text();
   res.status(resp.status).setHeader('Content-Type','application/json');
+  const cr=resp.headers.get('content-range');
+  if(cr)res.setHeader('Content-Range',cr);
   if (req.method === 'GET') {
     res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate=60');
   }

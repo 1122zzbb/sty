@@ -978,6 +978,8 @@ let images=[];
 let pending=null;
 let sb=null;
 let _records=[];
+let _cloudTotal=0;
+let _cloudLoaded=0;
 let selectedSubjects=new Set();
 let apiLocked=true;
 let sbLocked=true;
@@ -1094,7 +1096,6 @@ const USE_PROXY=true;
 async function sbReq(path,opts={}){
   let url,headers;
   if(USE_PROXY){
-    /* 走 Vercel 代理 —— 利用 Vercel 香港边缘节点加速 */
     url='/api/sb/rest/v1/'+path;
     headers={'Content-Type':'application/json',Prefer:opts.prefer||'','x-sb-url':sb?.url||'',...(opts.headers||{})};
   }else{
@@ -1103,7 +1104,9 @@ async function sbReq(path,opts={}){
   }
   const r=await fetch(url,{...opts,headers});
   if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.message||r.statusText)}
-  const t=await r.text();return t?JSON.parse(t):null;
+  const t=await r.text();
+  if(opts._raw)return{data:t?JSON.parse(t):null,count:r.headers.get('content-range')};
+  return t?JSON.parse(t):null;
 }
 function setSyncStatus(type,ok,msg){
   $(type==='sync'?'syncDot':'apiSyncDot').className='sync-dot '+(ok?'ok':'err');
@@ -1288,7 +1291,10 @@ async function loadRecords(opts={}){
 }
 
 async function fetchCloudRecords(){
-  const data=await sbReq('study_logs?select=*&order=date.desc');
+  const PAGE_SIZE=20;
+  const{data,count}=await sbReq('study_logs?select=*&order=date.desc',{_raw:true,headers:{Range:`0-${PAGE_SIZE-1}`}});
+  _cloudTotal=count?parseInt(count.split('/')[1]||'0'):0;
+  _cloudLoaded=data?data.length:0;
   if(!data)return null;
   /* 合并 IndexedDB 待同步记录 */
   const pending=await idbGetAll().catch(()=>[]);
@@ -1304,6 +1310,24 @@ async function fetchCloudRecords(){
     localStorage.setItem(CACHE_KEY,json);
   }
   return data;
+}
+
+async function loadMoreCloud(){
+  if(_cloudLoaded>=_cloudTotal)return[];
+  const PAGE_SIZE=20;
+  const{data}=await sbReq(`study_logs?select=*&order=date.desc`,{_raw:true,headers:{Range:`${_cloudLoaded}-${_cloudLoaded+PAGE_SIZE-1}`}});
+  if(data&&data.length){
+    _cloudLoaded+=data.length;
+    const all=localRecords();
+    const newOnes=data.filter(d=>!all.some(a=>a.id===d.id));
+    if(newOnes.length){
+      all.push(...newOnes);
+      all.sort((a,b)=>b.date.localeCompare(a.date));
+      try{localStorage.setItem(CACHE_KEY,JSON.stringify(all))}catch{}
+      _records=all;
+    }
+  }
+  return data||[];
 }
 
 async function refreshFromCloud(){
@@ -1887,6 +1911,15 @@ async function renderHistory(){
       <div class="record-excerpt" style="-webkit-line-clamp:2">${line1}${line2?'<br>'+line2:''}</div>
     </div>`;
   }).join('');
+  if(sb&&_cloudLoaded<_cloudTotal){
+    list.innerHTML+=`<div id="loadMoreWrap" style="text-align:center;padding:1rem"><button class="btn" onclick="loadMore()">加载更多 (${_cloudLoaded}/${_cloudTotal})</button></div>`;
+  }
+}
+async function loadMore(){
+  const btn=document.querySelector('#loadMoreWrap .btn');
+  if(btn){btn.disabled=true;btn.innerHTML='<span class="spinner-sm"></span> 加载中…'}
+  await loadMoreCloud();
+  renderHistory();
 }
 
 function openRecord(i){

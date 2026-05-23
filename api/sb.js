@@ -17,6 +17,8 @@ export default async function handler(req, res) {
       'Content-Type': 'application/json',
       'Prefer': req.headers['prefer'] || '',
       ...(req.headers['range'] ? {'Range': req.headers['range']} : {}),
+      ...(req.headers['limit'] ? {'Limit': req.headers['limit']} : {}),
+      ...(req.headers['offset'] ? {'Offset': req.headers['offset']} : {}),
     },
     body: ['GET','HEAD'].includes(req.method) ? undefined : JSON.stringify(req.body),
   });

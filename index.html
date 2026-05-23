@@ -1292,7 +1292,7 @@ async function loadRecords(opts={}){
 
 async function fetchCloudRecords(){
   const PAGE_SIZE=20;
-  const{data,count}=await sbReq('study_logs?select=*&order=date.desc',{_raw:true,headers:{Range:`0-${PAGE_SIZE-1}`}});
+  const{data,count}=await sbReq('study_logs?select=id,date,subjects,hours,memo&order=date.desc&limit='+PAGE_SIZE+'&offset=0',{_raw:true});
   _cloudTotal=count?parseInt(count.split('/')[1]||'0'):0;
   _cloudLoaded=data?data.length:0;
   if(!data)return null;
@@ -1304,7 +1304,7 @@ async function fetchCloudRecords(){
     data.sort((a,b)=>b.date.localeCompare(a.date));
   }
   /* 写入本地缓存 */
-  const json=JSON.stringify(data.map(r=>({id:r.id,date:r.date,subjects:r.subjects,hours:r.hours,memo:r.memo,analysis:r.analysis,images:r.images||[]})));
+  const json=JSON.stringify(data.map(r=>({id:r.id,date:r.date,subjects:r.subjects,hours:r.hours,memo:r.memo,images:r.images||[]})));
   const used=getStorageSize()-(localStorage.getItem(CACHE_KEY)||'').length*2;
   if(used+json.length*2<4.8*1024*1024){
     localStorage.setItem(CACHE_KEY,json);
@@ -1315,7 +1315,7 @@ async function fetchCloudRecords(){
 async function loadMoreCloud(){
   if(_cloudLoaded>=_cloudTotal)return[];
   const PAGE_SIZE=20;
-  const{data}=await sbReq(`study_logs?select=*&order=date.desc`,{_raw:true,headers:{Range:`${_cloudLoaded}-${_cloudLoaded+PAGE_SIZE-1}`}});
+  const{data}=await sbReq(`study_logs?select=id,date,subjects,hours,memo&order=date.desc&limit=${PAGE_SIZE}&offset=${_cloudLoaded}`,{_raw:true});
   if(data&&data.length){
     _cloudLoaded+=data.length;
     const all=localRecords();
@@ -1891,16 +1891,9 @@ async function renderHistory(){
   if(!records.length){list.innerHTML='<div class="empty">暂无记录<br>完成今日记录后保存即可在此查看</div>';return}
   list.innerHTML=records.map((r,i)=>{
     const tags=(r.subjects||'').split(/[,，、]/).map(s=>s.trim()).filter(Boolean);
-    // 左上角标题：优先取【主题】，否则用科目
-    const themeMatch=r.analysis&&r.analysis.match(/【主题】\s*([^\n【]+)/);
-    const cardTitle=themeMatch?themeMatch[1].trim():(tags.length?tags.join('、'):'学习记录');
-    // 两行简介：取【今日所学】第一条 + 【一句感受】，fallback 到 memo
-    const learnMatch=r.analysis&&r.analysis.match(/【今日所学】\s*([\s\S]*?)(?=【|$)/);
-    const firstLearn=learnMatch?learnMatch[1].replace(/\n/g,' ').trim().substring(0,60):'';
-    const feelMatch=r.analysis&&r.analysis.match(/【一句感受】\s*([^\n【]+)/);
-    const feelText=feelMatch?feelMatch[1].trim():'';
-    const line1=firstLearn||(r.memo?r.memo.replace(/\n/g,' ').substring(0,60):'（无内容）');
-    const line2=feelText||(r.memo&&r.memo.length>60?r.memo.replace(/\n/g,' ').substring(60,110):'');
+    const cardTitle=tags.length?tags.join('、'):'学习记录';
+    const line1=r.memo?r.memo.replace(/\n/g,' ').substring(0,80):'（无内容）';
+    const line2=r.memo&&r.memo.length>80?r.memo.replace(/\n/g,' ').substring(80,140):'';
     const deleteBtn=deleteMode?`<button class="del-btn" onclick="event.stopPropagation();confirmDeleteRecord(${i})">删除</button>`:'';
     return`<div class="record-item${deleteMode?' delete-mode':''}" onclick="${deleteMode?'':'openRecord('+i+')'}">
       <div class="record-item-top">
@@ -1922,10 +1915,13 @@ async function loadMore(){
   renderHistory();
 }
 
-function openRecord(i){
+async function openRecord(i){
   const r=_records[i];if(!r)return;
   $('modalTitle').textContent=r.date+' 学习记录';
-  const imgs=Array.isArray(r.images)?r.images:[];
+  let imgs=Array.isArray(r.images)?r.images:[];
+  if((!imgs.length||!r.analysis)&&sb&&r.id){
+    try{const rec=await sbReq(`study_logs?id=eq.${r.id}&select=images,analysis`);if(rec&&rec[0]){if(rec[0].images)imgs=rec[0].images;if(rec[0].analysis)r.analysis=rec[0].analysis}}catch{}
+  }
   $('modalImgs').innerHTML=imgs.map(s=>`<img src="${s}"/>`).join('');
   $('modalImgs').style.display=imgs.length?'grid':'none';
   let bodyHtml='';

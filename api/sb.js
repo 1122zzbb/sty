@@ -1,14 +1,13 @@
 export default async function handler(req, res) {
   const url = new URL(req.url, 'http://localhost');
-  const path = url.pathname.replace('/api/sb', '') + (url.search || '');
+  const basePath = url.pathname.replace('/api/sb', '');
+  // Remove Vercel rewrite's extra ?path= param
+  url.searchParams.delete('path');
+  const qs = url.searchParams.toString();
+  const path = basePath + (qs ? '?' + qs : '');
   const baseUrl = req.headers['x-sb-url'] || 'https://epxuylxivkdfxxiucxgg.supabase.co';
   const sbKey = process.env.SB_ANON_KEY;
   const target = baseUrl + path;
-
-  // Debug: return the constructed URL
-  if (req.query._debug) {
-    return res.status(200).json({ target, path, pathname: url.pathname, search: url.search, sbKey: sbKey ? 'SET' : 'MISSING' });
-  }
 
   const resp = await fetch(target, {
     method: req.method,

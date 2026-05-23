@@ -20,11 +20,11 @@
   --transition-speed:.35s;
 }
 /* 暗色模式：手动切换优先，其次跟随系统 */
-@media(prefers-color-scheme:dark){html:not([data-theme="light"]){:root{
+@media(prefers-color-scheme:dark){html:not([data-theme="light"]){
   --bg:#141412;--bg-card:#1e1e1b;--bg-muted:#252521;
   --text:#f0eeea;--text-2:#9b9b93;--text-3:#6b6b65;
   --border:rgba(255,255,255,.08);--border-2:rgba(255,255,255,.15);--accent:#f0eeea;
-}}}
+}}
 html[data-theme="dark"]{
   --bg:#141412;--bg-card:#1e1e1b;--bg-muted:#252521;
   --text:#f0eeea;--text-2:#9b9b93;--text-3:#6b6b65;
@@ -958,7 +958,14 @@ CREATE POLICY "公开读写" ON app_settings FOR ALL USING (true);</pre>
 /* ── IndexedDB 离线队列 ── */
 const IDB_NAME='studylog_idb';
 const IDB_STORE='pending_records';
-function openIDB(){return new Promise((resolve,reject)=>{const req=indexedDB.open(IDB_NAME,1);req.onupgradeneeded=e=>{e.target.result.createObjectStore(IDB_STORE,{keyPath:'id'})};req.onsuccess=e=>resolve(e.target.result);req.onerror=()=>reject(req.error)})}
+let _idbConn=null;
+function openIDB(){return new Promise((resolve,reject)=>{
+  if(_idbConn){resolve(_idbConn);return}
+  const req=indexedDB.open(IDB_NAME,1);
+  req.onupgradeneeded=e=>{e.target.result.createObjectStore(IDB_STORE,{keyPath:'id'})};
+  req.onsuccess=e=>{_idbConn=e.target.result;resolve(_idbConn)};
+  req.onerror=()=>reject(req.error);
+})}
 async function idbSave(record){const db=await openIDB();return new Promise((resolve,reject)=>{const tx=db.transaction(IDB_STORE,'readwrite');tx.objectStore(IDB_STORE).put({...record,_pendingSync:true});tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)})}
 async function idbDelete(id){const db=await openIDB();return new Promise((resolve,reject)=>{const tx=db.transaction(IDB_STORE,'readwrite');tx.objectStore(IDB_STORE).delete(id);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)})}
 async function idbGetAll(){const db=await openIDB();return new Promise((resolve,reject)=>{const req=db.transaction(IDB_STORE,'readonly').objectStore(IDB_STORE).getAll();req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)})}
@@ -976,7 +983,7 @@ let apiLocked=true;
 let sbLocked=true;
 let deleteMode=false;
 let pendingDeleteIndex=null;
-const DELETE_PWD='1122zzbb';
+const DELETE_PWD=dob('=ImY6pnMyETM');
 
 const MODEL_PRESETS={
   siliconflow:['Qwen/Qwen3.5-9B','Qwen/Qwen3.6-27B','Qwen/Qwen2.5-VL-72B-Instruct','Pro/Qwen/Qwen2.5-VL-7B-Instruct','Qwen/Qwen3-14B','deepseek-ai/DeepSeek-V3','deepseek-ai/deepseek-vl2'],
@@ -1089,7 +1096,7 @@ async function sbReq(path,opts={}){
   if(USE_PROXY){
     /* 走 Vercel 代理 —— 利用 Vercel 香港边缘节点加速 */
     url='/api/sb/rest/v1/'+path;
-    headers={'Content-Type':'application/json',Prefer:opts.prefer||'',...(opts.headers||{})};
+    headers={'Content-Type':'application/json',Prefer:opts.prefer||'','x-sb-url':sb?.url||'',...(opts.headers||{})};
   }else{
     url=sb.url+'/rest/v1/'+path;
     headers={apikey:sb.key,Authorization:'Bearer '+sb.key,'Content-Type':'application/json',Prefer:opts.prefer||'',...(opts.headers||{})};
@@ -1972,7 +1979,7 @@ async function executeDelete(){
     try{ await cloudDeleteRecord(r.id); }catch(e){ console.warn('云端删除失败:',e.message); }
   }
   closeConfirmOverlay();
-    if(localOk){
+  if(localOk){
     toast('已删除');
     deleteMode=false;
     $('deleteModeBtn').textContent='删除模式';

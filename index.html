@@ -2160,6 +2160,16 @@ async function renderTimeline(){
   container.innerHTML='<div class="tl-empty"><span class="spinner-sm"></span></div>';
   const filterArea=$('tlFilter');
   const allRecords=await loadRecords();
+  /* 批量懒加载图片字段 */
+  if(sb){
+    try{
+      const imgData=await sbReq('study_logs?select=id,images&images=not.is.null&order=date.desc&limit=100');
+      if(Array.isArray(imgData)){
+        const imgMap=Object.fromEntries(imgData.filter(r=>r.images&&r.images.length).map(r=>[r.id,r.images]));
+        allRecords.forEach(r=>{if(!r.images||!r.images.length)imgMap[r.id]&&(r.images=imgMap[r.id])});
+      }
+    }catch{}
+  }
   const withImages=allRecords.filter(r=>Array.isArray(r.images)&&r.images.length>0);
   _tlRecords=withImages;
 
@@ -2218,7 +2228,7 @@ function setTlFilter(val){
 }
 
 /* Lightbox - 左图右文 */
-function openLightbox(recordIdx,imgIdx){
+async function openLightbox(recordIdx,imgIdx){
   const r=_tlRecords[recordIdx];
   if(!r)return;
   _tlCurrentRecord=r;
@@ -2227,6 +2237,10 @@ function openLightbox(recordIdx,imgIdx){
   renderLightbox();
   $('lightbox').classList.add('show');
   document.body.style.overflow='hidden';
+  /* 懒加载 analysis */
+  if(!r.analysis&&sb&&r.id){
+    try{const rec=await sbReq(`study_logs?id=eq.${r.id}&select=analysis`);if(rec&&rec[0]&&rec[0].analysis){r.analysis=rec[0].analysis;renderLightbox()}}catch{}
+  }
 }
 
 function renderLightbox(){

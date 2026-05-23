@@ -5,6 +5,11 @@ export default async function handler(req, res) {
   const sbKey = process.env.SB_ANON_KEY;
   const target = baseUrl + path;
 
+  // Debug: return the constructed URL
+  if (req.query._debug) {
+    return res.status(200).json({ target, path, pathname: url.pathname, search: url.search, sbKey: sbKey ? 'SET' : 'MISSING' });
+  }
+
   const resp = await fetch(target, {
     method: req.method,
     headers: {

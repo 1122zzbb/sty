@@ -991,7 +991,7 @@ const MODEL_PRESETS={
   siliconflow:['Qwen/Qwen3.5-9B','Qwen/Qwen3.6-27B','Qwen/Qwen2.5-VL-72B-Instruct','Pro/Qwen/Qwen2.5-VL-7B-Instruct','Qwen/Qwen3-14B','deepseek-ai/DeepSeek-V3','deepseek-ai/deepseek-vl2'],
   deepseek:['deepseek-chat','deepseek-reasoner']
 };
-const DEFAULT_MODEL={siliconflow:'Qwen/Qwen2.5-VL-72B-Instruct',deepseek:'deepseek-chat'};
+const DEFAULT_MODEL={siliconflow:'Qwen/Qwen3-14B',deepseek:'deepseek-chat'};
 const ENDPOINTS={
   siliconflow:'https://api.siliconflow.cn/v1/chat/completions',
   deepseek:'https://api.deepseek.com/v1/chat/completions'
@@ -2098,7 +2098,7 @@ function populateModelSelect(provider){
 function onModelSelectChange(){$('apiModel').value=''}
 function onProviderChange(){
   const p=$('apiProvider').value;populateModelSelect(p);$('apiModel').value='';
-  $('providerHint').textContent=p==='deepseek'?'deepseek-chat 为纯文字分析模型':'推荐 Qwen2.5-VL-72B 支持图片识别';
+  $('providerHint').textContent=p==='deepseek'?'deepseek-chat 为纯文字分析模型':'推荐 Qwen3-14B 或 Qwen3.5-9B';
   $('apiKeyLabel').textContent=p==='deepseek'?'DeepSeek API Key':'硅基流动 API Key';
 }
 

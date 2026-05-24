@@ -1169,8 +1169,7 @@ async function restoreSettingsFromCloud(){
     if(cloudSettings.apiProvider)update.apiProvider=cloudSettings.apiProvider;
     if(cloudSettings.apiModel)update.apiModel=cloudSettings.apiModel;
     if(cloudSettings.sbUrl)update.sbUrl=cloudSettings.sbUrl;
-    // API Key 不从云端恢复，保留本地设置
-    // if(cloudSettings.encryptedApiKey)update.apiKey=cloudSettings.encryptedApiKey;
+    if(cloudSettings.encryptedApiKey)update.apiKey=cloudSettings.encryptedApiKey;
     if(cloudSettings.encryptedSbKey)update.sbKey=cloudSettings.encryptedSbKey;
     cfg(update);
     restored=true;

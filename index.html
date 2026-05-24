@@ -1155,7 +1155,8 @@ async function syncSettingsToCloud(){
   for(const obj of objs){
     await cloudSaveSetting(obj.key,obj.value);
   }
-  if(c.apiKey)await cloudSaveSetting('encryptedApiKey',c.apiKey);
+  // API Key 不同步到云端，避免覆盖本地新 Key
+  // if(c.apiKey)await cloudSaveSetting('encryptedApiKey',c.apiKey);
   if(c.sbKey)await cloudSaveSetting('encryptedSbKey',c.sbKey);
 }
 async function restoreSettingsFromCloud(){
@@ -1168,8 +1169,8 @@ async function restoreSettingsFromCloud(){
     if(cloudSettings.apiProvider)update.apiProvider=cloudSettings.apiProvider;
     if(cloudSettings.apiModel)update.apiModel=cloudSettings.apiModel;
     if(cloudSettings.sbUrl)update.sbUrl=cloudSettings.sbUrl;
-    // 只在本地没有 API Key 时才从云端恢复，避免覆盖用户刚设置的新 Key
-    if(cloudSettings.encryptedApiKey&&!readSens('apiKey'))update.apiKey=cloudSettings.encryptedApiKey;
+    // API Key 不从云端恢复，保留本地设置
+    // if(cloudSettings.encryptedApiKey)update.apiKey=cloudSettings.encryptedApiKey;
     if(cloudSettings.encryptedSbKey)update.sbKey=cloudSettings.encryptedSbKey;
     cfg(update);
     restored=true;

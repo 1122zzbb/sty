@@ -1461,7 +1461,7 @@ ${images.length>0?`- 图片：${images.length}张`:''}
   content.push({type:'text',text:prompt});
 
   try{
-    const resp=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},body:JSON.stringify({model:apiModel,max_tokens:2000,temperature:0.3,stream:true,messages:[{role:'user',content}]})});
+    const resp=await fetch('/api/ai',{method:'POST',headers:{'Content-Type':'application/json','x-target-url':endpoint,'x-api-key':apiKey},body:JSON.stringify({model:apiModel,max_tokens:2000,temperature:0.3,stream:true,messages:[{role:'user',content}]})});
     if(!resp.ok){const data=await resp.json().catch(()=>({}));throw new Error(data.error?.message||'请求失败')}
 
     /* 流式输出到 sheet */
@@ -2124,7 +2124,7 @@ async function testApiConnection(showToast=true){
   setSyncStatus('api',false,'检测中…');
   if(statusEl){statusEl.textContent='测试中…';statusEl.className='conn-status'}
   try{
-    const resp=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},body:JSON.stringify({model,max_tokens:5,messages:[{role:'user',content:'Hi'}]})});
+    const resp=await fetch('/api/ai',{method:'POST',headers:{'Content-Type':'application/json','x-target-url':endpoint,'x-api-key':apiKey},body:JSON.stringify({model,max_tokens:5,messages:[{role:'user',content:'Hi'}]})});
     const data=await resp.json();
     if(!resp.ok)throw new Error(data.error?.message||'请求失败');
     setSyncStatus('api',true,'AI 已连接');
@@ -2633,10 +2633,10 @@ JSON 格式（仅在操作指令时）：
   const timeout=setTimeout(()=>controller.abort(),15000);
 
   try{
-    const resp=await fetch(endpoint,{
+    const resp=await fetch('/api/ai',{
       signal:controller.signal,
       method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+      headers:{'Content-Type':'application/json','x-target-url':endpoint,'x-api-key':apiKey},
       body:JSON.stringify({
         model:apiModel,max_tokens:1200,temperature:0.1,
         /* Qwen3 系列禁用思考过程 */

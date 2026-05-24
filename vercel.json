@@ -1,6 +1,7 @@
 {
   "regions": ["hkg1"],
   "rewrites": [
-    { "source": "/api/sb/:path*", "destination": "/api/sb" }
+    { "source": "/api/sb/:path*", "destination": "/api/sb" },
+    { "source": "/api/ai/:path*", "destination": "/api/ai" }
   ]
 }

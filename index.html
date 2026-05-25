@@ -2495,16 +2495,14 @@ async function handleAuth(){
   }
 }
 function onAuthSuccess(data){
-  console.log('[DEBUG] onAuthSuccess called, data keys:',Object.keys(data),'hasToken:',!!data.access_token,'hasUser:',!!data.user);
-  window._authToken=data.access_token||localStorage.getItem('sty_access_token');
-  window._userId=data.user?.id||data.id;
+  _authToken=data.access_token||localStorage.getItem('sty_access_token');
+  _userId=data.user?.id||data.id;
   if(data.access_token)saveSession(data);
-  const uid=window._userId.substring(0,8);
+  const uid=_userId.substring(0,8);
   CACHE_KEY='study_logs_v4_'+uid;
   CFG_KEY='study_cfg_v2_'+uid;
   IDB_NAME='studylog_idb_'+uid;
   _idbConn=null;
-  console.log('[DEBUG] onAuthSuccess done, _authToken set:',!!window._authToken);
   hideLoginScreen();
   initWithAuth();
 }
@@ -2513,11 +2511,11 @@ async function handleLogout(){
   try{
     await fetch('/api/sb/auth/v1/logout',{
       method:'POST',
-      headers:{'x-sb-url':DEFAULT_SB_URL,'Authorization':'Bearer '+window._authToken}
+      headers:{'x-sb-url':DEFAULT_SB_URL,'Authorization':'Bearer '+_authToken}
     });
   }catch{}
   clearSession();
-  window._authToken=null;window._userId=null;
+  _authToken=null;_userId=null;
   showLoginScreen();
 }
 async function tryRefreshToken(){
@@ -2532,23 +2530,23 @@ async function tryRefreshToken(){
 }
 async function initAuth(){
   const token=localStorage.getItem('sty_access_token');
-  console.log('[DEBUG] initAuth, storedToken:',!!token);
+  void 0;
   if(token){
-    window._authToken=token;
+    _authToken=token;
     try{
       const r=await fetch('/api/sb/auth/v1/user',{
         headers:{'x-sb-url':DEFAULT_SB_URL,'Authorization':'Bearer '+token}
       });
-      console.log('[DEBUG] user validation status:',r.status,'ok:',r.ok);
+      void 0;
       if(r.ok){
         const user=await r.json();
-        console.log('[DEBUG] user validated, calling onAuthSuccess');
+        void 0;
         onAuthSuccess({access_token:token,user});
         return;
       }
-    }catch(e){console.log('[DEBUG] user validation error:',e.message)}
+    }catch{}
     const refreshed=await tryRefreshToken();
-    console.log('[DEBUG] refresh result:',!!refreshed);
+    void 0;
     if(refreshed){onAuthSuccess(refreshed);return}
   }
   showLoginScreen();
@@ -2579,9 +2577,7 @@ async function initWithAuth(){
     if(newApiKey)testApiConnection(false);
     toast('已从云端恢复配置');
   }
-  console.log('[DEBUG] sb:',!!sb,'authToken:',!!_authToken,'CACHE_KEY:',CACHE_KEY);
   const allRecords=await loadRecords();
-  console.log('[DEBUG] records loaded:',allRecords?.length,'first:',allRecords?.[0]?.date);
   drawLineChart(allRecords);
   updateStorageInfo();
   trySyncPending();

@@ -2463,9 +2463,9 @@ function clearSession(){
   localStorage.removeItem('sty_refresh_token');
 }
 async function supabaseAuth(path,body){
-  const r=await fetch(DEFAULT_SB_URL+'/auth/v1/'+path,{
+  const r=await fetch('/api/sb/auth/v1/'+path,{
     method:'POST',
-    headers:{'apikey':DEFAULT_SB_KEY,'Content-Type':'application/json'},
+    headers:{'Content-Type':'application/json','x-sb-url':DEFAULT_SB_URL},
     body:JSON.stringify(body)
   });
   const data=await r.json();
@@ -2508,9 +2508,9 @@ function onAuthSuccess(data){
 async function handleLogout(){
   if(!confirm('确定退出登录？'))return;
   try{
-    await fetch(DEFAULT_SB_URL+'/auth/v1/logout',{
+    await fetch('/api/sb/auth/v1/logout',{
       method:'POST',
-      headers:{'apikey':DEFAULT_SB_KEY,'Authorization':'Bearer '+window._authToken}
+      headers:{'x-sb-url':DEFAULT_SB_URL,'Authorization':'Bearer '+window._authToken}
     });
   }catch{}
   clearSession();
@@ -2532,8 +2532,8 @@ async function initAuth(){
   if(token){
     window._authToken=token;
     try{
-      const r=await fetch(DEFAULT_SB_URL+'/auth/v1/user',{
-        headers:{'apikey':DEFAULT_SB_KEY,'Authorization':'Bearer '+token}
+      const r=await fetch('/api/sb/auth/v1/user',{
+        headers:{'x-sb-url':DEFAULT_SB_URL,'Authorization':'Bearer '+token}
       });
       if(r.ok){
         const user=await r.json();

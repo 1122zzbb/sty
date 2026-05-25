@@ -2572,7 +2572,9 @@ async function initWithAuth(){
     if(newApiKey)testApiConnection(false);
     toast('已从云端恢复配置');
   }
+  console.log('[DEBUG] sb:',!!sb,'authToken:',!!_authToken,'CACHE_KEY:',CACHE_KEY);
   const allRecords=await loadRecords();
+  console.log('[DEBUG] records loaded:',allRecords?.length,'first:',allRecords?.[0]?.date);
   drawLineChart(allRecords);
   updateStorageInfo();
   trySyncPending();

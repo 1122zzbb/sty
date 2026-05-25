@@ -2495,6 +2495,7 @@ async function handleAuth(){
   }
 }
 function onAuthSuccess(data){
+  console.log('[DEBUG] onAuthSuccess called, data keys:',Object.keys(data),'hasToken:',!!data.access_token,'hasUser:',!!data.user);
   window._authToken=data.access_token;
   window._userId=data.user?.id||data.id;
   const uid=window._userId.substring(0,8);
@@ -2529,19 +2530,23 @@ async function tryRefreshToken(){
 }
 async function initAuth(){
   const token=localStorage.getItem('sty_access_token');
+  console.log('[DEBUG] initAuth, storedToken:',!!token);
   if(token){
     window._authToken=token;
     try{
       const r=await fetch('/api/sb/auth/v1/user',{
         headers:{'x-sb-url':DEFAULT_SB_URL,'Authorization':'Bearer '+token}
       });
+      console.log('[DEBUG] user validation status:',r.status,'ok:',r.ok);
       if(r.ok){
         const user=await r.json();
+        console.log('[DEBUG] user validated, calling onAuthSuccess');
         onAuthSuccess({access_token:token,user});
         return;
       }
-    }catch{}
+    }catch(e){console.log('[DEBUG] user validation error:',e.message)}
     const refreshed=await tryRefreshToken();
+    console.log('[DEBUG] refresh result:',!!refreshed);
     if(refreshed){onAuthSuccess(refreshed);return}
   }
   showLoginScreen();

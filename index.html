@@ -9,7 +9,6 @@
 <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/katex.min.css"/>
 <script defer src="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <script defer src="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],ignoreClass:'no-katex'});"></script>
-<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -2442,7 +2441,7 @@ function updateStorageInfo(){
   }
 }
 
-/* ── 登录/注册 ── */
+/* ── 登录/注册（Supabase REST API，无 CDN 依赖） ── */
 let _isLoginMode=true;
 function toggleAuthMode(){
   _isLoginMode=!_isLoginMode;
@@ -2455,6 +2454,24 @@ function toggleAuthMode(){
 function showLoginScreen(){$('loginScreen').classList.remove('hidden')}
 function hideLoginScreen(){$('loginScreen').classList.add('hidden')}
 
+function saveSession(session){
+  if(session.access_token)localStorage.setItem('sty_access_token',session.access_token);
+  if(session.refresh_token)localStorage.setItem('sty_refresh_token',session.refresh_token);
+}
+function clearSession(){
+  localStorage.removeItem('sty_access_token');
+  localStorage.removeItem('sty_refresh_token');
+}
+async function supabaseAuth(path,body){
+  const r=await fetch(DEFAULT_SB_URL+'/auth/v1/'+path,{
+    method:'POST',
+    headers:{'apikey':DEFAULT_SB_KEY,'Content-Type':'application/json'},
+    body:JSON.stringify(body)
+  });
+  const data=await r.json();
+  if(!r.ok)throw new Error(data.msg||data.error_description||data.error||'请求失败');
+  return data;
+}
 async function handleAuth(){
   const email=$('authEmail').value.trim();
   const password=$('authPassword').value;
@@ -2464,21 +2481,22 @@ async function handleAuth(){
   if(password.length<6){errEl.textContent='密码至少 6 位';return}
   errEl.textContent='';btn.disabled=true;btn.textContent=_isLoginMode?'登录中...':'注册中...';
   try{
-    const{data,error}=await(_isLoginMode
-      ?window._supabaseClient.auth.signInWithPassword({email,password})
-      :window._supabaseClient.auth.signUp({email,password}));
-    if(error)throw error;
-    if(!_isLoginMode&&!data.session){errEl.textContent='注册成功！请去邮箱验证后再登录';_isLoginMode=true;toggleAuthMode();return}
-    onAuthSuccess(data.session);
+    const data=await supabaseAuth(
+      _isLoginMode?'token?grant_type=password':'signup',
+      {email,password}
+    );
+    if(!_isLoginMode&&!data.access_token){errEl.textContent='注册成功！请去邮箱验证后再登录';_isLoginMode=true;toggleAuthMode();return}
+    saveSession(data);
+    onAuthSuccess(data);
   }catch(e){
     errEl.textContent=e.message||'操作失败';
   }finally{
     btn.disabled=false;btn.textContent=_isLoginMode?'登录':'注册';
   }
 }
-function onAuthSuccess(session){
-  window._authToken=session.access_token;
-  window._userId=session.user.id;
+function onAuthSuccess(data){
+  window._authToken=data.access_token;
+  window._userId=data.user?.id||data.id;
   const uid=window._userId.substring(0,8);
   CACHE_KEY='study_logs_v4_'+uid;
   CFG_KEY='study_cfg_v2_'+uid;
@@ -2489,22 +2507,44 @@ function onAuthSuccess(session){
 }
 async function handleLogout(){
   if(!confirm('确定退出登录？'))return;
-  try{await window._supabaseClient.auth.signOut()}catch{}
+  try{
+    await fetch(DEFAULT_SB_URL+'/auth/v1/logout',{
+      method:'POST',
+      headers:{'apikey':DEFAULT_SB_KEY,'Authorization':'Bearer '+window._authToken}
+    });
+  }catch{}
+  clearSession();
   window._authToken=null;window._userId=null;
   showLoginScreen();
 }
+async function tryRefreshToken(){
+  const rt=localStorage.getItem('sty_refresh_token');
+  if(!rt)return null;
+  try{
+    const data=await supabaseAuth('token?grant_type=refresh_token',{refresh_token:rt});
+    if(data.access_token){saveSession(data);return data}
+  }catch{}
+  clearSession();
+  return null;
+}
 async function initAuth(){
-  window._supabaseClient=supabase.createClient(DEFAULT_SB_URL,DEFAULT_SB_KEY);
-  const{data:{session}}=await window._supabaseClient.auth.getSession();
-  if(session){
-    onAuthSuccess(session);
-  }else{
-    showLoginScreen();
+  const token=localStorage.getItem('sty_access_token');
+  if(token){
+    window._authToken=token;
+    try{
+      const r=await fetch(DEFAULT_SB_URL+'/auth/v1/user',{
+        headers:{'apikey':DEFAULT_SB_KEY,'Authorization':'Bearer '+token}
+      });
+      if(r.ok){
+        const user=await r.json();
+        onAuthSuccess({access_token:token,user});
+        return;
+      }
+    }catch{}
+    const refreshed=await tryRefreshToken();
+    if(refreshed){onAuthSuccess(refreshed);return}
   }
-  window._supabaseClient.auth.onAuthStateChange((event,session)=>{
-    if(event==='SIGNED_OUT')showLoginScreen();
-    if(event==='SIGNED_IN'||event==='TOKEN_REFRESHED'){if(session)onAuthSuccess(session)}
-  });
+  showLoginScreen();
 }
 
 /* 初始化 */

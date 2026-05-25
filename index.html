@@ -2496,13 +2496,15 @@ async function handleAuth(){
 }
 function onAuthSuccess(data){
   console.log('[DEBUG] onAuthSuccess called, data keys:',Object.keys(data),'hasToken:',!!data.access_token,'hasUser:',!!data.user);
-  window._authToken=data.access_token;
+  window._authToken=data.access_token||localStorage.getItem('sty_access_token');
   window._userId=data.user?.id||data.id;
+  if(data.access_token)saveSession(data);
   const uid=window._userId.substring(0,8);
   CACHE_KEY='study_logs_v4_'+uid;
   CFG_KEY='study_cfg_v2_'+uid;
   IDB_NAME='studylog_idb_'+uid;
   _idbConn=null;
+  console.log('[DEBUG] onAuthSuccess done, _authToken set:',!!window._authToken);
   hideLoginScreen();
   initWithAuth();
 }

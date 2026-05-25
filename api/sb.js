@@ -7,13 +7,14 @@ export default async function handler(req, res) {
   const path = basePath + (qs ? '?' + qs : '');
   const baseUrl = req.headers['x-sb-url'] || 'https://epxuylxivkdfxxiucxgg.supabase.co';
   const sbKey = process.env.SB_ANON_KEY;
+  const userToken = req.headers['authorization']?.replace('Bearer ', '') || sbKey;
   const target = baseUrl + path;
 
   const resp = await fetch(target, {
     method: req.method,
     headers: {
       'apikey': sbKey,
-      'Authorization': 'Bearer ' + sbKey,
+      'Authorization': 'Bearer ' + userToken,
       'Content-Type': 'application/json',
       'Prefer': req.headers['prefer'] || '',
       ...(req.headers['range'] ? {'Range': req.headers['range']} : {}),

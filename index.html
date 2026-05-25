@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/katex.min.css"/>
 <script defer src="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <script defer src="https://cdn.bootcdn.net/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],ignoreClass:'no-katex'});"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -597,9 +598,49 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 
 .progress-tip{font-size:11px;color:var(--text-3);background:var(--bg-muted);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:1.25rem;line-height:1.6;border:.5px solid var(--border)}
 .progress-tip code{font-family:monospace;background:var(--bg);padding:1px 5px;border-radius:3px;font-size:11px}
+
+/* 登录界面 */
+.login-screen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px}
+.login-screen.hidden{display:none}
+.login-card{background:var(--bg-card);border:.5px solid var(--border);border-radius:var(--radius);padding:2.5rem 2rem;width:100%;max-width:380px;box-shadow:0 8px 32px rgba(0,0,0,.08)}
+.login-card h2{font-family:'Noto Serif SC',serif;font-size:20px;font-weight:500;text-align:center;margin-bottom:4px}
+.login-card .subtitle{text-align:center;font-size:13px;color:var(--text-3);margin-bottom:1.5rem}
+.login-card .field{margin-bottom:14px}
+.login-card .field label{font-size:12px;color:var(--text-2);margin-bottom:5px;display:block}
+.login-card .field input{width:100%;font-family:inherit;font-size:14px;color:var(--text);background:var(--bg-muted);border:.5px solid var(--border);border-radius:var(--radius-sm);padding:9px 11px;outline:none;transition:border-color .15s}
+.login-card .field input:focus{border-color:var(--border-2)}
+.login-card .login-btn{width:100%;padding:10px;background:var(--accent);color:var(--bg);border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;transition:opacity .2s;margin-top:6px}
+.login-card .login-btn:hover{opacity:.85}
+.login-card .login-btn:disabled{opacity:.5;cursor:not-allowed}
+.login-card .toggle-link{text-align:center;margin-top:14px;font-size:13px;color:var(--text-3)}
+.login-card .toggle-link a{color:var(--text);cursor:pointer;text-decoration:underline}
+.login-card .error-msg{color:var(--red);font-size:12px;text-align:center;margin-bottom:10px;min-height:18px}
 </style>
 </head>
 <body>
+<!-- 登录界面 -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <h2>学习日志</h2>
+    <p class="subtitle" id="loginSubtitle">登录以同步你的学习数据</p>
+    <div class="error-msg" id="loginError"></div>
+    <form id="authForm" onsubmit="handleAuth();return false;">
+      <div class="field">
+        <label>邮箱</label>
+        <input id="authEmail" type="email" placeholder="your@email.com" required/>
+      </div>
+      <div class="field">
+        <label>密码</label>
+        <input id="authPassword" type="password" placeholder="至少 6 位" required minlength="6"/>
+      </div>
+      <button class="login-btn" id="authSubmitBtn" onclick="handleAuth()">登录</button>
+    </form>
+    <div class="toggle-link">
+      <span id="authToggleText">没有账号？</span>
+      <a id="authToggleLink" onclick="toggleAuthMode()">注册</a>
+    </div>
+  </div>
+</div>
 <div class="app">
   <div class="header">
     <div class="logo">
@@ -839,6 +880,9 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
           <span class="conn-status" id="connStatus"></span>
         </div>
         <span class="hint-text">保存成功后自动锁定，防止误改</span>
+      <div style="margin-top:14px;padding-top:12px;border-top:.5px solid var(--border)">
+        <button class="btn" onclick="handleLogout()" style="background:var(--red);color:#fff">退出登录</button>
+      </div>
         <div style="margin-top:12px;padding:10px;background:var(--bg-muted);border-radius:var(--radius-sm);font-size:12px;line-height:1.6;color:var(--text-2);">
           <strong style="color:var(--text);">首次使用需创建配置表</strong>
           <p style="margin-top:4px;">在 Supabase SQL Editor 中执行：</p>
@@ -956,7 +1000,7 @@ CREATE POLICY "公开读写" ON app_settings FOR ALL USING (true);</pre>
 
 <script>
 /* ── IndexedDB 离线队列 ── */
-const IDB_NAME='studylog_idb';
+let IDB_NAME='studylog_idb';
 const IDB_STORE='pending_records';
 let _idbConn=null;
 function openIDB(){return new Promise((resolve,reject)=>{
@@ -970,10 +1014,13 @@ async function idbSave(record){const db=await openIDB();return new Promise((reso
 async function idbDelete(id){const db=await openIDB();return new Promise((resolve,reject)=>{const tx=db.transaction(IDB_STORE,'readwrite');tx.objectStore(IDB_STORE).delete(id);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)})}
 async function idbGetAll(){const db=await openIDB();return new Promise((resolve,reject)=>{const req=db.transaction(IDB_STORE,'readonly').objectStore(IDB_STORE).getAll();req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)})}
 
-const CACHE_KEY='study_logs_v4';
-const CFG_KEY='study_cfg_v2';
+let CACHE_KEY='study_logs_v4';
+let CFG_KEY='study_cfg_v2';
 const DEFAULT_SB_URL='https://epxuylxivkdfxxiucxgg.supabase.co';
 const DEFAULT_SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVweHV5bHhpdmtkZnh4aXVjeGdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NTk2MzcsImV4cCI6MjA5MzUzNTYzN30.d3gHELymQomUzJ5AsP3kVZDT2dDW7OIEWNGyVK0by0k';
+let _authToken=null;
+let _userId=null;
+let _authMode='login';
 let images=[];
 let pending=null;
 let sb=null;
@@ -1097,7 +1144,7 @@ async function sbReq(path,opts={}){
   let url,headers;
   if(USE_PROXY){
     url='/api/sb/rest/v1/'+path;
-    headers={'Content-Type':'application/json',Prefer:opts.prefer||'','x-sb-url':sb?.url||'',...(opts.headers||{})};
+    headers={'Content-Type':'application/json',Prefer:opts.prefer||'','x-sb-url':sb?.url||'',...(_authToken?{'Authorization':'Bearer '+_authToken}:{}),...(opts.headers||{})};
   }else{
     url=sb.url+'/rest/v1/'+path;
     headers={apikey:sb.key,Authorization:'Bearer '+sb.key,'Content-Type':'application/json',Prefer:opts.prefer||'',...(opts.headers||{})};
@@ -2395,8 +2442,73 @@ function updateStorageInfo(){
   }
 }
 
+/* ── 登录/注册 ── */
+let _isLoginMode=true;
+function toggleAuthMode(){
+  _isLoginMode=!_isLoginMode;
+  $('authToggleText').textContent=_isLoginMode?'没有账号？':'已有账号？';
+  $('authToggleLink').textContent=_isLoginMode?'注册':'登录';
+  $('authSubmitBtn').textContent=_isLoginMode?'登录':'注册';
+  $('loginSubtitle').textContent=_isLoginMode?'登录以同步你的学习数据':'注册一个新账号';
+  $('loginError').textContent='';
+}
+function showLoginScreen(){$('loginScreen').classList.remove('hidden')}
+function hideLoginScreen(){$('loginScreen').classList.add('hidden')}
+
+async function handleAuth(){
+  const email=$('authEmail').value.trim();
+  const password=$('authPassword').value;
+  const errEl=$('loginError');
+  const btn=$('authSubmitBtn');
+  if(!email||!password){errEl.textContent='请填写邮箱和密码';return}
+  if(password.length<6){errEl.textContent='密码至少 6 位';return}
+  errEl.textContent='';btn.disabled=true;btn.textContent=_isLoginMode?'登录中...':'注册中...';
+  try{
+    const{data,error}=await(_isLoginMode
+      ?window._supabaseClient.auth.signInWithPassword({email,password})
+      :window._supabaseClient.auth.signUp({email,password}));
+    if(error)throw error;
+    if(!_isLoginMode&&!data.session){errEl.textContent='注册成功！请去邮箱验证后再登录';_isLoginMode=true;toggleAuthMode();return}
+    onAuthSuccess(data.session);
+  }catch(e){
+    errEl.textContent=e.message||'操作失败';
+  }finally{
+    btn.disabled=false;btn.textContent=_isLoginMode?'登录':'注册';
+  }
+}
+function onAuthSuccess(session){
+  window._authToken=session.access_token;
+  window._userId=session.user.id;
+  const uid=window._userId.substring(0,8);
+  CACHE_KEY='study_logs_v4_'+uid;
+  CFG_KEY='study_cfg_v2_'+uid;
+  IDB_NAME='studylog_idb_'+uid;
+  _idbConn=null;
+  hideLoginScreen();
+  initWithAuth();
+}
+async function handleLogout(){
+  if(!confirm('确定退出登录？'))return;
+  try{await window._supabaseClient.auth.signOut()}catch{}
+  window._authToken=null;window._userId=null;
+  showLoginScreen();
+}
+async function initAuth(){
+  window._supabaseClient=supabase.createClient(DEFAULT_SB_URL,DEFAULT_SB_KEY);
+  const{data:{session}}=await window._supabaseClient.auth.getSession();
+  if(session){
+    onAuthSuccess(session);
+  }else{
+    showLoginScreen();
+  }
+  window._supabaseClient.auth.onAuthStateChange((event,session)=>{
+    if(event==='SIGNED_OUT')showLoginScreen();
+    if(event==='SIGNED_IN'||event==='TOKEN_REFRESHED'){if(session)onAuthSuccess(session)}
+  });
+}
+
 /* 初始化 */
-async function init(){
+async function initWithAuth(){
   $('todayLabel').textContent=today();
   buildHoursSelect();setupDrag();
   initSb(DEFAULT_SB_URL,DEFAULT_SB_KEY);
@@ -2423,10 +2535,10 @@ async function init(){
   const allRecords=await loadRecords();
   drawLineChart(allRecords);
   updateStorageInfo();
-  trySyncPending(); /* 页面加载时尝试补传离线队列 */
+  trySyncPending();
 }
 window.addEventListener('online',trySyncPending);
-init();
+initAuth();
 </script>
 
 <!-- AI 助手 -->
